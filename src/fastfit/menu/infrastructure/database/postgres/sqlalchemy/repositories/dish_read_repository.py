@@ -2,8 +2,6 @@ from decimal import Decimal
 from uuid import UUID
 
 from common.infrastructure.database.sqlalchemy.executor import QueryExecutor
-from sqlalchemy import select
-
 from fastfit.menu.application.interfaces.repositories.dish_read_repository import (
     IDishReadRepository,
 )
@@ -12,6 +10,7 @@ from fastfit.menu.domain.value_objects.dish_filters import DishFilterType
 from fastfit.menu.infrastructure.database.postgres.sqlalchemy.models.dish_base import (
     DishBase,
 )
+from sqlalchemy import select
 
 
 class DishReadRepository(IDishReadRepository):

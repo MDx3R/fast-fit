@@ -1,8 +1,6 @@
 from uuid import UUID
 
 from common.infrastructure.database.sqlalchemy.executor import QueryExecutor
-from sqlalchemy import delete, select
-
 from fastfit.menu.application.interfaces.repositories.dish_repository import (
     IDishRepository,
 )
@@ -13,6 +11,7 @@ from fastfit.menu.infrastructure.database.postgres.sqlalchemy.mappers.dish_mappe
 from fastfit.menu.infrastructure.database.postgres.sqlalchemy.models.dish_base import (
     DishBase,
 )
+from sqlalchemy import delete, select
 
 
 class DishRepository(IDishRepository):
