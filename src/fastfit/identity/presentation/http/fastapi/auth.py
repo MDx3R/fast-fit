@@ -1,19 +1,22 @@
 from typing import Annotated
 
 from fastapi import Depends, HTTPException, Request, status
-from fastapi.security import OAuth2PasswordBearer
 from fastfit.identity.application.interfaces.services.token_intospector import (
     ITokenIntrospector,
 )
 from fastfit.identity.domain.value_objects.descriptor import IdentityDescriptor
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
-oauth2_scheme_no_error = OAuth2PasswordBearer(tokenUrl="auth/login", auto_error=False)
+def get_access_token(request: Request) -> str | None:
+    return request.cookies.get("access_token")
+
+
+def get_refresh_token(request: Request) -> str | None:
+    return request.cookies.get("refresh_token")
 
 
 def is_authenticated(
-    token: Annotated[str | None, Depends(oauth2_scheme_no_error)],
+    token: Annotated[str | None, Depends(get_access_token)],
 ) -> bool:
     return token is not None
 
@@ -45,13 +48,9 @@ def require_unauthenticated(
         )
 
 
-def get_token(token: Annotated[str, Depends(oauth2_scheme)]) -> str:
-    return token
-
-
 async def get_descriptor(
     request: Request,
-    token: Annotated[str, Depends(oauth2_scheme)],
+    token: Annotated[str, Depends(get_access_token)],
     token_introspector: Annotated[ITokenIntrospector, Depends()],
 ) -> IdentityDescriptor:
     if hasattr(request.state, "user"):

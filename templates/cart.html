@@ -17,32 +17,10 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <h1 class="text-3xl font-bold text-orange-500 mb-8">Оформление заказа</h1>
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <!-- Корзина -->
+        <!-- Cart -->
         <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-md">
             <h2 class="text-xl font-semibold mb-4">Ваша корзина</h2>
-            <div id="cart-items" class="space-y-6">
-                {% for item in cart_items %}
-                <div class="cart-item flex gap-4 border-b border-gray-200 pb-4">
-                    <img src="{{ item.image }}" alt="{{ item.name }}" class="w-24 h-24 object-cover rounded-lg">
-                    <div class="flex-1">
-                        <h3 class="text-lg font-semibold">{{ item.name }}</h3>
-                        <p class="text-sm text-gray-600">{{ item.calories }} ккал</p>
-                        <p class="text-sm text-gray-600">{{ item.price }} ₽</p>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button class="decrease-quantity w-8 h-8 bg-gray-200 rounded-full hover:bg-gray-300 transition-colors">-</button>
-                        <input type="number" class="quantity-input w-12 text-center" value="{{ item.quantity }}" min="1"
-                            data-price="{{ item.price }}"
-                            data-calories="{{ item.calories }}"
-                            data-protein="{{ item.protein }}"
-                            data-fat="{{ item.fat }}"
-                            data-carbs="{{ item.carbs }}">
-                        <button class="increase-quantity w-8 h-8 bg-gray-200 rounded-full hover:bg-gray-300 transition-colors">+</button>
-                        <button class="remove-item text-red-500 hover:text-red-600 transition-colors">✕</button>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
+            <div id="cart-items" class="space-y-6"></div>
             <div class="mt-6">
                 <h3 class="text-lg font-semibold mb-2">Общий КБЖУ</h3>
                 <p class="text-sm text-gray-600">
@@ -58,11 +36,11 @@
             </div>
         </div>
 
-        <!-- Форма оформления заказа -->
+        <!-- Order Form -->
         <div class="bg-white p-6 rounded-2xl shadow-md">
             <h2 class="text-xl font-semibold mb-4">Детали заказа</h2>
             
-            <!-- Способ получения -->
+            <!-- Delivery Method -->
             <div class="mb-6">
                 <h3 class="text-lg font-semibold mb-3">Способ получения</h3>
                 <div class="flex gap-4">
@@ -72,13 +50,13 @@
                 </div>
             </div>
 
-            <!-- Поля для доставки -->
+            <!-- Delivery Fields -->
             <div id="delivery-fields" class="mb-6">
                 <h3 class="text-lg font-semibold mb-3">Адрес доставки</h3>
                 <input type="text" id="address" class="w-full p-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all" placeholder="Введите адрес" value="{{ user_address|default('') }}">
             </div>
 
-            <!-- Поля для самовывоза -->
+            <!-- Pickup Fields -->
             <div id="pickup-fields" class="mb-6 hidden">
                 <h3 class="text-lg font-semibold mb-3">Выберите ресторан</h3>
                 <select id="restaurant" class="w-full p-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all">
@@ -88,7 +66,7 @@
                 </select>
             </div>
 
-            <!-- Способ оплаты -->
+            <!-- Payment Method -->
             <div class="mb-6">
                 <h3 class="text-lg font-semibold mb-3">Способ оплаты</h3>
                 <select id="payment" class="w-full p-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all">
@@ -98,7 +76,7 @@
                 </select>
             </div>
 
-            <!-- Кнопка оформления -->
+            <!-- Submit Order Button -->
             <button id="submit-order" class="w-full bg-green-500 text-white py-3 rounded-full font-semibold hover:bg-green-600 transition-colors">Оформить заказ</button>
         </div>
     </div>
@@ -107,7 +85,118 @@
 
 {% block scripts %}
 <script>
-    // Переключение способа получения
+    // Cart management functions
+    function getCart() {
+        return JSON.parse(localStorage.getItem('cart') || '[]');
+    }
+
+    function saveCart(cart) {
+        localStorage.setItem('cart', JSON.stringify(cart));
+        updateCartCounter();
+        renderCart();
+    }
+
+    function updateCartCounter() {
+        const cart = getCart();
+        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+        const counter = document.getElementById('cart-counter');
+        if (counter) {
+            counter.textContent = totalItems || '';
+            counter.classList.toggle('hidden', totalItems === 0);
+        }
+    }
+
+    function renderCart() {
+        const cartItemsContainer = document.getElementById('cart-items');
+        const cart = getCart();
+        cartItemsContainer.innerHTML = '';
+
+        if (cart.length === 0) {
+            cartItemsContainer.innerHTML = '<p class="text-sm text-gray-600">Корзина пуста</p>';
+        } else {
+            cart.forEach((item, index) => {
+                const itemHtml = `
+                    <div class="cart-item flex gap-4 border-b border-gray-200 pb-4">
+                        <img src="${item.image}" alt="${item.name}" class="w-24 h-24 object-cover rounded-lg">
+                        <div class="flex-1">
+                            <h3 class="text-lg font-semibold">${item.name}</h3>
+                            <p class="text-sm text-gray-600">${item.calories} ккал</p>
+                            <p class="text-sm text-gray-600">${item.price.toFixed(2)} ₽</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button class="decrease-quantity w-8 h-8 bg-gray-200 rounded-full hover:bg-gray-300 transition-colors" data-index="${index}">-</button>
+                            <input type="number" class="quantity-input w-12 text-center" value="${item.quantity}" min="1" data-index="${index}">
+                            <button class="increase-quantity w-8 h-8 bg-gray-200 rounded-full hover:bg-gray-300 transition-colors" data-index="${index}">+</button>
+                            <button class="remove-item text-red-500 hover:text-red-600 transition-colors" data-index="${index}">✕</button>
+                        </div>
+                    </div>
+                `;
+                cartItemsContainer.insertAdjacentHTML('beforeend', itemHtml);
+            });
+        }
+
+        // Update totals
+        updateCartTotals();
+    }
+
+    function updateCartTotals() {
+        const cart = getCart();
+        let totalPrice = 0;
+        let totalCalories = 0;
+        let totalProtein = 0;
+        let totalFat = 0;
+        let totalCarbs = 0;
+
+        cart.forEach(item => {
+            const quantity = item.quantity;
+            totalPrice += quantity * item.price;
+            totalCalories += quantity * item.calories;
+            totalProtein += quantity * item.protein;
+            totalFat += quantity * item.fat;
+            totalCarbs += quantity * item.carbs;
+        });
+
+        document.getElementById('cart-total').textContent = `${totalPrice.toFixed(2)} ₽`;
+        document.getElementById('total-calories').textContent = totalCalories.toFixed(0);
+        document.getElementById('total-protein').textContent = totalProtein.toFixed(0);
+        document.getElementById('total-fat').textContent = totalFat.toFixed(0);
+        document.getElementById('total-carbs').textContent = totalCarbs.toFixed(0);
+    }
+
+    // Event listeners for cart interactions
+    document.addEventListener('click', (e) => {
+        const cart = getCart();
+        const index = parseInt(e.target.dataset.index);
+
+        if (e.target.classList.contains('increase-quantity')) {
+            cart[index].quantity++;
+            saveCart(cart);
+        } else if (e.target.classList.contains('decrease-quantity')) {
+            if (cart[index].quantity > 1) {
+                cart[index].quantity--;
+                saveCart(cart);
+            }
+        } else if (e.target.classList.contains('remove-item')) {
+            cart.splice(index, 1);
+            saveCart(cart);
+        }
+    });
+
+    document.addEventListener('input', (e) => {
+        if (e.target.classList.contains('quantity-input')) {
+            const index = parseInt(e.target.dataset.index);
+            const value = parseInt(e.target.value);
+            const cart = getCart();
+            if (value >= 1) {
+                cart[index].quantity = value;
+                saveCart(cart);
+            } else {
+                e.target.value = cart[index].quantity;
+            }
+        }
+    });
+
+    // Delivery method toggle
     const deliveryMethods = document.querySelectorAll('.delivery-method');
     const deliveryFields = document.getElementById('delivery-fields');
     const pickupFields = document.getElementById('pickup-fields');
@@ -122,71 +211,12 @@
         });
     });
 
-    // Установить "Доставка" по умолчанию
     document.querySelector('.delivery-method[data-method="delivery"]').classList.add('bg-orange-500', 'text-white', 'border-orange-500');
 
-    // Управление корзиной и расчет КБЖУ
-    const cartItems = document.querySelectorAll('.cart-item');
-    const cartTotalElement = document.getElementById('cart-total');
-    const totalCaloriesElement = document.getElementById('total-calories');
-    const totalProteinElement = document.getElementById('total-protein');
-    const totalFatElement = document.getElementById('total-fat');
-    const totalCarbsElement = document.getElementById('total-carbs');
-
-    function updateCartTotals() {
-        let totalPrice = 0;
-        let totalCalories = 0;
-        let totalProtein = 0;
-        let totalFat = 0;
-        let totalCarbs = 0;
-
-        cartItems.forEach(item => {
-            const quantity = parseInt(item.querySelector('.quantity-input').value);
-            const input = item.querySelector('.quantity-input');
-            totalPrice += quantity * parseFloat(input.dataset.price);
-            totalCalories += quantity * parseFloat(input.dataset.calories);
-            totalProtein += quantity * parseFloat(input.dataset.protein);
-            totalFat += quantity * parseFloat(input.dataset.fat);
-            totalCarbs += quantity * parseFloat(input.dataset.carbs);
-        });
-
-        cartTotalElement.textContent = `${totalPrice} ₽`;
-        totalCaloriesElement.textContent = totalCalories;
-        totalProteinElement.textContent = totalProtein;
-        totalFatElement.textContent = totalFat;
-        totalCarbsElement.textContent = totalCarbs;
-    }
-
-    cartItems.forEach(item => {
-        const quantityInput = item.querySelector('.quantity-input');
-        const increaseBtn = item.querySelector('.increase-quantity');
-        const decreaseBtn = item.querySelector('.decrease-quantity');
-        const removeBtn = item.querySelector('.remove-item');
-
-        increaseBtn.addEventListener('click', () => {
-            quantityInput.value = parseInt(quantityInput.value) + 1;
-            updateCartTotals();
-        });
-
-        decreaseBtn.addEventListener('click', () => {
-            if (quantityInput.value > 1) {
-                quantityInput.value = parseInt(quantityInput.value) - 1;
-                updateCartTotals();
-            }
-        });
-
-        quantityInput.addEventListener('input', () => {
-            if (quantityInput.value < 1) quantityInput.value = 1;
-            updateCartTotals();
-        });
-
-        removeBtn.addEventListener('click', () => {
-            item.remove();
-            updateCartTotals();
-        });
+    // Initialize cart on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        renderCart();
+        updateCartCounter();
     });
-
-    // Инициализация итогов
-    updateCartTotals();
 </script>
 {% endblock %}

@@ -3,9 +3,10 @@ from typing import Annotated
 from urllib.parse import quote, unquote
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Form, HTTPException, Request
+from fastapi import APIRouter, Depends, Form, HTTPException, Request, Response
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
+from fastfit.identity.presentation.http.fastapi.auth import get_access_token
 from fastfit.menu.application.dtos.queries.get_dish_by_id_query import GetDishByIdQuery
 from fastfit.menu.application.dtos.queries.get_dishes_by_restaurant_query import (
     GetDishesByRestaurantQuery,
@@ -101,7 +102,12 @@ async def get_menu(
 
 
 @menu_router.get("/cart", name="cart")
-async def get_cart(request: Request) -> HTMLResponse:
+async def get_cart(
+    request: Request, token: Annotated[str | None, Depends(get_access_token)]
+) -> Response:
+    if not token:
+        return RedirectResponse(url="/auth/login", status_code=303)
+
     return templates.TemplateResponse(
         "cart.html",
         {

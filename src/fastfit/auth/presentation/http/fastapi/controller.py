@@ -17,6 +17,10 @@ from fastfit.auth.application.interfaces.usecases.command.verify_code_use_case i
     IVerifyCodeUseCase,
     VerifyCodeCommand,
 )
+from fastfit.identity.presentation.http.fastapi.auth import (
+    get_access_token,
+    get_refresh_token,
+)
 
 
 # Configure Jinja2 templates
@@ -27,8 +31,10 @@ auth_router = APIRouter()
 
 # GET endpoint to render the login page
 @auth_router.get("/login", name="login")
-async def get_login(request: Request) -> Response:
-    if request.cookies.get("access_token"):
+async def get_login(
+    request: Request, token: Annotated[str | None, Depends(get_access_token)]
+) -> Response:
+    if token:
         return RedirectResponse(url="/menu", status_code=303)
 
     return templates.TemplateResponse(
@@ -47,13 +53,17 @@ async def get_login(request: Request) -> Response:
 
 # POST endpoint to handle login form submission (phone number and code verification)
 @auth_router.post("/login")
-async def post_login(
+async def post_login(  # noqa: PLR0913
     request: Request,
+    token: Annotated[str | None, Depends(get_access_token)],
     send_code_use_case: Annotated[ISendCodeUseCase, Depends()],
     verify_code_use_case: Annotated[IVerifyCodeUseCase, Depends()],
     phone: Annotated[str, Form()],
     code: Annotated[str | None, Form()] = None,
 ) -> Response:
+    if token:
+        return RedirectResponse(url="/menu", status_code=303)
+
     code = code or None
     try:
         if code is None:
@@ -107,13 +117,13 @@ async def post_login(
 # POST endpoint for logout
 @auth_router.get("/logout", name="logout")
 async def logout(
-    request: Request, logout_use_case: Annotated[ILogoutUseCase, Depends()]
+    token: Annotated[str | None, Depends(get_refresh_token)],
+    logout_use_case: Annotated[ILogoutUseCase, Depends()],
 ) -> RedirectResponse:
-    try:
-        token = request.cookies.get("refresh_token")
-        if not token:
-            return RedirectResponse(url="/menu", status_code=303)
+    if not token:
+        return RedirectResponse(url="/menu", status_code=303)
 
+    try:
         command = LogoutCommand(refresh_token=token)
         await logout_use_case.execute(command)
 

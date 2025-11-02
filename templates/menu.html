@@ -18,9 +18,7 @@
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <!-- Success Message -->
-    {% if success_message %}
-    <p class="text-sm text-green-500 mb-4 text-center">{{ success_message }}</p>
-    {% endif %}
+    <div id="cart-message" class="hidden text-sm text-green-500 mb-4 text-center"></div>
 
     <!-- Banner -->
     <div class="relative bg-cover bg-center rounded-2xl p-12 text-center text-white mb-10" style="background-image: url('{{ banner_image|default('https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=1200') }}')">
@@ -64,11 +62,10 @@
                 <h3 class="text-lg font-semibold mb-2">{{ item.name }}</h3>
                 <p class="text-sm text-gray-600 mb-4">{{ item.description }}</p>
                 <p class="text-sm text-gray-600 mb-4">{{ item.calories }} ккал</p>
-                <form method="POST" action="/cart/add">
-                    <input type="hidden" name="dish_id" value="{{ item.id }}">
-                    <input type="number" name="quantity" value="1" min="1" class="w-16 text-center border border-gray-300 rounded-lg mb-2">
-                    <button type="submit" class="bg-orange-500 text-white py-2 px-6 rounded-full font-semibold hover:bg-orange-600 transition-colors">Добавить в корзину ({{ item.price }} ₽)</button>
-                </form>
+                <div class="flex justify-center items-center gap-2">
+                    <input type="number" class="quantity-input w-16 text-center border border-gray-300 rounded-lg" value="1" min="1" data-dish-id="{{ item.id }}">
+                    <button class="add-to-cart bg-orange-500 text-white py-2 px-6 rounded-full font-semibold hover:bg-orange-600 transition-colors" data-dish-id="{{ item.id }}" data-name="{{ item.name }}" data-price="{{ item.price }}" data-calories="{{ item.calories }}" data-protein="{{ item.protein }}" data-fat="{{ item.fat }}" data-carbs="{{ item.carbs }}" data-image="{{ item.image }}">Добавить в корзину ({{ item.price }} ₽)</button>
+                </div>
             </div>
         </div>
         {% endfor %}
@@ -78,7 +75,73 @@
 
 {% block scripts %}
 <script>
-    // Existing filter logic (unchanged)
+    // Cart management functions
+    function getCart() {
+        return JSON.parse(localStorage.getItem('cart') || '[]');
+    }
+
+    function saveCart(cart) {
+        localStorage.setItem('cart', JSON.stringify(cart));
+        updateCartCounter();
+    }
+
+    function addToCart(dish) {
+        const cart = getCart();
+        const existingItem = cart.find(item => item.dish_id === dish.dish_id);
+        if (existingItem) {
+            existingItem.quantity += dish.quantity;
+        } else {
+            cart.push(dish);
+        }
+        saveCart(cart);
+        showCartMessage(`Добавлено: ${dish.name}`);
+    }
+
+    function updateCartCounter() {
+        const cart = getCart();
+        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+        const counter = document.getElementById('cart-counter');
+        if (counter) {
+            counter.textContent = totalItems || '';
+            counter.classList.toggle('hidden', totalItems === 0);
+        }
+    }
+
+    function showCartMessage(message) {
+        const messageDiv = document.getElementById('cart-message');
+        messageDiv.textContent = message;
+        // messageDiv.classList.remove('hidden');
+        // setTimeout(() => messageDiv.classList.add('hidden'), 3000);
+    }
+
+    // Add to cart event listeners
+    document.querySelectorAll('.add-to-cart').forEach(button => {
+        button.addEventListener('click', () => {
+            const quantityInput = button.parentElement.querySelector('.quantity-input');
+            const quantity = parseInt(quantityInput.value);
+            if (quantity < 1) {
+                showCartMessage('Количество должно быть не менее 1');
+                return;
+            }
+            const dish = {
+                dish_id: button.dataset.dishId,
+                name: button.dataset.name,
+                price: parseFloat(button.dataset.price),
+                calories: parseFloat(button.dataset.calories),
+                protein: parseFloat(button.dataset.protein),
+                fat: parseFloat(button.dataset.fat),
+                carbs: parseFloat(button.dataset.carbs),
+                image: button.dataset.image,
+                quantity: quantity
+            };
+            addToCart(dish);
+        });
+    });
+
+    // Initialize cart counter on page load
+    document.addEventListener('DOMContentLoaded', updateCartCounter);
+
+    // Existing filter logic
     const categoryButtons = document.querySelectorAll('.category-buttons .filter-btn');
     const calorieSelect = document.getElementById('calories');
     const menuItems = document.querySelectorAll('.menu-item');
