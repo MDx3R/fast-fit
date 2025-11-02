@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Вход{% endblock %}
+
+{% block additional_styles %}
+.phone-input::-webkit-outer-spin-button,
+.phone-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.phone-input {
+    -moz-appearance: textfield;
+}
+{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto px-4 sm:px-6 py-8">
+    <h1 class="text-3xl font-bold text-orange-500 mb-6 text-center">Вход в FastFit</h1>
+    <div class="bg-white p-6 rounded-2xl shadow-md">
+        {% if error_message %}
+        <p class="text-sm text-red-500 mb-4 text-center">{{ error_message }}</p>
+        {% endif %}
+        <form id="login-form" method="POST">
+            <div class="mb-4">
+                <label for="phone" class="block text-sm font-semibold mb-2">Номер телефона</label>
+                <div class="relative">
+                    <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">📞</span>
+                    <input type="tel" id="phone" name="phone" class="phone-input w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all" placeholder="{{ phone_placeholder|default('+79991234567') }}" value="{{ phone_placeholder|default('') }}" required>
+                </div>
+            </div>
+            <div class="mb-4 {% if not show_code_field %}hidden{% endif %}" id="code-field">
+                <label for="code" class="block text-sm font-semibold mb-2">Код из SMS</label>
+                <input type="text" id="code" name="code" class="w-full p-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all" placeholder="{{ code_placeholder|default('Введите код') }}">
+            </div>
+            <button type="submit" id="submit-login" class="w-full bg-green-500 text-white py-3 rounded-full font-semibold hover:bg-green-600 transition-colors">{{ button_text|default('Получить код') }}</button>
+        </form>
+        <p class="text-sm text-gray-600 mt-4 text-center">{{ form_description|default('Мы отправим код подтверждения на ваш номер телефона.') }}</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Client-side form handling (optional, as server-side rendering handles most logic)
+    const loginForm = document.getElementById('login-form');
+    const submitButton = document.getElementById('submit-login');
+    const codeField = document.getElementById('code-field');
+
+    loginForm.addEventListener('submit', (e) => {
+        // Form submission is handled by the server via POST
+        // JavaScript can be used for additional client-side validation if needed
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Личный кабинет{% endblock %}
+
+{% block additional_styles %}
+.calendar-day {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    display: inline-block;
+    margin: 2px;
+}
+.calendar-day.level-0 { background-color: #ebedf0; }
+.calendar-day.level-1 { background-color: #c6e48b; }
+.calendar-day.level-2 { background-color: #7bc96f; }
+.calendar-day.level-3 { background-color: #239a3b; }
+.calendar-day.level-4 { background-color: #196127; }
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <h1 class="text-3xl font-bold text-orange-500 mb-8">Личный кабинет</h1>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Список заказов -->
+        <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-md">
+            <h2 class="text-xl font-semibold mb-4">История заказов</h2>
+            <!-- Сообщение на основе количества заказов -->
+            {% if orders|length <= 2 %}
+            <p class="text-sm text-gray-600 mb-4">Вы сделали {{ orders|length }} заказа за последнюю неделю — попробуйте наши новинки!</p>
+            {% elif orders|length <= 5 %}
+            <p class="text-sm text-gray-600 mb-4">Вы сделали {{ orders|length }} заказа за последнюю неделю — отличный выбор для здорового питания!</p>
+            {% else %}
+            <p class="text-sm text-gray-600 mb-4">Вы сделали {{ orders|length }} заказов за последнюю неделю — вы настоящий фанат FastFit!</p>
+            {% endif %}
+            <div class="space-y-4">
+                {% for order in orders %}
+                <div class="border-b border-gray-200 pb-4">
+                    <div class="flex justify-between">
+                        <div>
+                            <h3 class="text-md font-semibold">Заказ #{{ order.id }}</h3>
+                            <p class="text-sm text-gray-600">{{ order.date|date }}</p>
+                        </div>
+                        <p class="text-sm text-gray-600">{{ order.total }} ₽</p>
+                    </div>
+                    <p class="text-sm text-gray-600">{{ order.items|join(', ') }}</p>
+                    <p class="text-sm font-semibold {{ order.status_color }}">{{ order.status }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Календарь активности -->
+        <div class="bg-white p-6 rounded-2xl shadow-md">
+            <h2 class="text-xl font-semibold mb-4">Активность заказов</h2>
+            <p class="text-sm text-gray-600 mb-4">Ваши заказы за последнюю неделю</p>
+            <div class="calendar flex flex-wrap gap-1">
+                {% for day in activity %}
+                <div class="calendar-day level-{{ day.level }}" title="{{ day.date }}: {{ day.orders_count }} заказ(ов)"></div>
+                {% endfor %}
+            </div>
+            <div class="mt-4 text-sm text-gray-600">
+                <p><span class="inline-block w-4 h-4 bg-gray-200 rounded mr-2"></span>0 заказов</p>
+                <p><span class="inline-block w-4 h-4 bg-green-200 rounded mr-2"></span>1 заказ</p>
+                <p><span class="inline-block w-4 h-4 bg-green-400 rounded mr-2"></span>2 заказа</p>
+                <p><span class="inline-block w-4 h-4 bg-green-600 rounded mr-2"></span>3+ заказа</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

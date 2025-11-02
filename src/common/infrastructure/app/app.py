@@ -11,6 +11,7 @@ from common.infrastructure.server.fastapi.middleware.logging_middleware import (
     LoggingMiddleware,
 )
 from common.infrastructure.server.fastapi.server import FastAPIServer
+from fastapi.staticfiles import StaticFiles
 
 
 class IApp(ABC):
@@ -25,6 +26,10 @@ class App(IApp):
 
     def configure(self) -> None:
         """Must be called after configuration of sub apps."""
+        self.server.get_app().mount(
+            "/static", StaticFiles(directory="static"), name="static"
+        )
+
         self.server.use_middleware(
             ErrorHandlingMiddleware,
             handlers=[

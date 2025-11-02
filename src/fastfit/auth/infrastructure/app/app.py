@@ -22,6 +22,7 @@ from fastfit.auth.infrastructure.di.container.container import (
 from fastfit.auth.infrastructure.server.fastapi.middleware.token_error_middleware import (
     TokenErrorHandler,
 )
+from fastfit.auth.presentation.http.fastapi.controller import auth_router
 from fastfit.identity.application.interfaces.services.token_intospector import (
     ITokenIntrospector,
 )
@@ -50,7 +51,8 @@ class AuthApp(IHTTPApp):
             IRefreshTokenUseCase, self.auth_container.refresh_token_use_case()
         )
 
-    def register_routers(self) -> None: ...
+    def register_routers(self) -> None:
+        self.server.register_router(auth_router, prefix=self.prefix, tags=self.tags)
 
 
 class TokenApp(IHTTPApp):

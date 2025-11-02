@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FastFit - {% block title %}{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Montserrat', Arial, sans-serif;
+        }
+        {% block additional_styles %}{% endblock %}
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+    <!-- Шапка -->
+    <header class="bg-gradient-to-r from-orange-500 to-orange-400 text-white py-4 px-6 flex justify-between items-center shadow-md sticky top-0 z-50">
+        <div class="flex items-center gap-4">
+            <div class="text-2xl font-bold uppercase tracking-wide">FastFit</div>
+            <div class="flex items-center gap-2 text-lg font-semibold cursor-pointer">
+                <span>📍</span>
+                <span>{{ city|default('Москва') }}</span>
+            </div>
+        </div>
+        <nav class="flex gap-6">
+            <a href="{{ url_for('menu') }}" class="font-semibold hover:opacity-80 transition-opacity">Меню</a>
+            <a href="{{ url_for('restaurants') }}" class="font-semibold hover:opacity-80 transition-opacity">Рестораны</a>
+            <a href="{{ url_for('login') }}" class="font-semibold hover:opacity-80 transition-opacity">Войти</a>
+            <a href="{{ url_for('cart') }}" class="font-semibold hover:opacity-80 transition-opacity">Корзина</a>
+        </nav>
+    </header>
+
+    <!-- Контейнер -->
+    {% block content %}{% endblock %}
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

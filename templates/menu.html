@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Здоровая и быстрая еда{% endblock %}
+
+{% block additional_styles %}
+.category-buttons {
+    scrollbar-width: none; /* Скрыть скроллбар в Firefox */
+}
+.category-buttons::-webkit-scrollbar {
+    display: none; /* Скрыть скроллбар в Chrome/Safari */
+}
+.calorie-select:focus + .calorie-tooltip {
+    opacity: 1;
+    transform: translateY(0);
+}
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Баннер -->
+    <div class="relative bg-cover bg-center rounded-2xl p-12 text-center text-white mb-10" style="background-image: url('{{ banner_image|default('https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=1200') }}')">
+        <div class="absolute inset-0 bg-black opacity-40 rounded-2xl"></div>
+        <div class="relative z-10">
+            <h1 class="text-4xl sm:text-5xl font-bold mb-4">{{ banner_title|default('Здоровая еда с FastFit') }}</h1>
+            <p class="text-lg sm:text-xl mb-6">{{ banner_subtitle|default('Вкусные и полезные блюда с доставкой или самовывозом') }}</p>
+            <a href="{{ url_for('menu') }}" class="inline-block bg-green-500 text-white py-3 px-8 rounded-full font-semibold hover:bg-green-600 transition-colors">Посмотреть меню</a>
+        </div>
+    </div>
+
+    <!-- Фильтры -->
+    <div class="bg-white p-6 rounded-lg shadow-md mb-10 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-6">
+        <div class="flex-1">
+            <h3 class="text-lg font-semibold mb-3">Категории</h3>
+            <div class="category-buttons flex gap-3 overflow-x-auto pb-2 scroll-smooth">
+                {% for category in categories %}
+                <button class="filter-btn px-4 py-2 border border-gray-300 rounded-full text-sm font-semibold whitespace-nowrap hover:bg-orange-500 hover:text-white hover:border-orange-500 transition-all" data-category="{{ category.id }}">{{ category.name }}</button>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="w-full sm:w-64 relative">
+            <h3 class="text-lg font-semibold mb-3">Калорийность</h3>
+            <div class="relative">
+                <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">🍎</span>
+                <select id="calories" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all">
+                    {% for calorie_option in calorie_options %}
+                    <option value="{{ calorie_option.value }}">{{ calorie_option.label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Меню -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {% for item in menu_items %}
+        <div class="menu-item bg-white rounded-2xl shadow-md overflow-hidden transform hover:-translate-y-1 transition-transform" data-category="{{ item.category }}" data-calories="{{ item.calories }}">
+            <img src="{{ item.image }}" alt="{{ item.name }}" class="w-full h-48 object-cover">
+            <div class="p-5 text-center">
+                <h3 class="text-lg font-semibold mb-2">{{ item.name }}</h3>
+                <p class="text-sm text-gray-600 mb-4">{{ item.description }}</p>
+                <p class="text-sm text-gray-600 mb-4">{{ item.calories }} ккал</p>
+                <button class="bg-orange-500 text-white py-2 px-6 rounded-full font-semibold hover:bg-orange-600 transition-colors">{{ item.price }} ₽</button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Интерактивность фильтров
+    const categoryButtons = document.querySelectorAll('.category-buttons .filter-btn');
+    const calorieSelect = document.getElementById('calories');
+    const menuItems = document.querySelectorAll('.menu-item');
+
+    // Переключение активной категории
+    categoryButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            categoryButtons.forEach(btn => btn.classList.remove('bg-orange-500', 'text-white', 'border-orange-500'));
+            button.classList.add('bg-orange-500', 'text-white', 'border-orange-500');
+            filterMenu();
+        });
+    });
+
+    // Фильтр по калориям
+    calorieSelect.addEventListener('change', filterMenu);
+
+    // Фильтрация меню
+    function filterMenu() {
+        const activeCategory = document.querySelector('.category-buttons .filter-btn.bg-orange-500')?.dataset.category || 'all';
+        const activeCalories = calorieSelect.value;
+
+        menuItems.forEach(item => {
+            const itemCategory = item.dataset.category;
+            const itemCalories = parseInt(item.dataset.calories);
+            let showItem = true;
+
+            if (activeCategory !== 'all' && activeCategory !== itemCategory) {
+                showItem = false;
+            }
+
+            if (activeCalories !== 'all') {
+                const [minCal, maxCal] = activeCalories.split('-').map(Number);
+                if (itemCalories < minCal || (maxCal && itemCalories > maxCal)) {
+                    showItem = false;
+                }
+            }
+
+            item.style.display = showItem ? 'block' : 'none';
+        });
+    }
+
+    // Установить "Все" как активную категорию по умолчанию
+    document.querySelector('.category-buttons .filter-btn[data-category="all"]').classList.add('bg-orange-500', 'text-white', 'border-orange-500');
+
+    // Drag-to-scroll для категорий
+    const categoryContainer = document.querySelector('.category-buttons');
+    let isDown = false;
+    let startX;
+    let scrollLeft;
+
+    categoryContainer.addEventListener('mousedown', (e) => {
+        isDown = true;
+        startX = e.pageX - categoryContainer.offsetLeft;
+        scrollLeft = categoryContainer.scrollLeft;
+    });
+
+    categoryContainer.addEventListener('mouseleave', () => {
+        isDown = false;
+    });
+
+    categoryContainer.addEventListener('mouseup', () => {
+        isDown = false;
+    });
+
+    categoryContainer.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - categoryContainer.offsetLeft;
+        const walk = (x - startX) * 2;
+        categoryContainer.scrollLeft = scrollLeft - walk;
+    });
+</script>
+{% endblock %}
