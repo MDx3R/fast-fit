@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Form, HTTPException, Request
+from fastapi import APIRouter, Depends, Form, HTTPException, Request, Response
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastfit.auth.application.dtos.commands.logout_command import LogoutCommand
@@ -45,11 +45,11 @@ async def get_login(request: Request) -> HTMLResponse:
 @auth_router.post("/login")
 async def post_login(
     request: Request,
-    phone: Annotated[str, Form()],
-    code: Annotated[str | None, Form(default=None)],
     send_code_use_case: Annotated[ISendCodeUseCase, Depends()],
     verify_code_use_case: Annotated[IVerifyCodeUseCase, Depends()],
-) -> HTMLResponse | RedirectResponse:
+    phone: Annotated[str, Form()],
+    code: Annotated[str | None, Form()] = None,
+) -> Response:
     try:
         if code is None:
             # Step 1: Send verification code
