@@ -13,12 +13,16 @@ from fastfit.auth.infrastructure.database.postgres.sqlalchemy.models.token_base 
 from fastfit.identity.infrastructure.database.postgres.sqlalchemy.models.identity_base import (
     IdentityBase,
 )
+from fastfit.menu.infrastructure.database.postgres.sqlalchemy.models.models import (
+    CategoryBase,
+    DishBase,
+)
 from sqlalchemy import Connection
 from sqlalchemy.ext.asyncio import AsyncEngine
 
 
 # Needed for proper database configuration, e.g. fkeys and tables
-__models__: list[type[Base]] = [IdentityBase, TokenBase]
+__models__: list[type[Base]] = [IdentityBase, TokenBase, DishBase, CategoryBase]
 
 
 # this is the Alembic Config object, which provides
