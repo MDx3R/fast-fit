@@ -50,6 +50,7 @@ async def post_login(
     phone: Annotated[str, Form()],
     code: Annotated[str | None, Form()] = None,
 ) -> Response:
+    code = code or None
     try:
         if code is None:
             # Step 1: Send verification code

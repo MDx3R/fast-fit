@@ -15,6 +15,12 @@ from fastfit.auth.application.interfaces.usecases.command.logout_use_case import
 from fastfit.auth.application.interfaces.usecases.command.refresh_token_use_case import (
     IRefreshTokenUseCase,
 )
+from fastfit.auth.application.interfaces.usecases.command.send_code_use_case import (
+    ISendCodeUseCase,
+)
+from fastfit.auth.application.interfaces.usecases.command.verify_code_use_case import (
+    IVerifyCodeUseCase,
+)
 from fastfit.auth.infrastructure.di.container.container import (
     AuthContainer,
     TokenContainer,
@@ -49,6 +55,12 @@ class AuthApp(IHTTPApp):
         )
         self.server.override_dependency(
             IRefreshTokenUseCase, self.auth_container.refresh_token_use_case()
+        )
+        self.server.override_dependency(
+            ISendCodeUseCase, self.auth_container.send_code_use_case()
+        )
+        self.server.override_dependency(
+            IVerifyCodeUseCase, self.auth_container.verify_code_use_case()
         )
 
     def register_routers(self) -> None:

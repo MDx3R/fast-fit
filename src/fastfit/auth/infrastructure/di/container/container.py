@@ -9,6 +9,10 @@ from fastfit.auth.application.usecases.command.logout_use_case import LogoutUseC
 from fastfit.auth.application.usecases.command.refresh_token_use_case import (
     RefreshTokenUseCase,
 )
+from fastfit.auth.application.usecases.command.send_code_use_case import SendCodeUseCase
+from fastfit.auth.application.usecases.command.verify_code_use_case import (
+    VerifyCodeUseCase,
+)
 from fastfit.auth.infrastructure.database.postgres.sqlalchemy.repositories.refresh_token_repository import (
     RefreshTokenRepository,
 )
@@ -74,6 +78,12 @@ class AuthContainer(containers.DeclarativeContainer):
 
     login_use_case = providers.Singleton(
         LoginUseCase,
+        identity_service=identity_service,
+        token_issuer=token_issuer,
+    )
+    send_code_use_case = providers.Singleton(SendCodeUseCase)
+    verify_code_use_case = providers.Singleton(
+        VerifyCodeUseCase,
         identity_service=identity_service,
         token_issuer=token_issuer,
     )

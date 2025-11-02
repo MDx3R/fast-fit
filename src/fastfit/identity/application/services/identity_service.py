@@ -46,7 +46,10 @@ class IdentityService(IIdentityService):
         if await self.exists_by_username(command.username):
             raise UsernameAlreadyTakenError(command.username)
 
-        password_hash = self.password_hasher.hash(command.password)
+        password_hash = None
+        if command.password:
+            password_hash = self.password_hasher.hash(command.password)
+
         identity = self.identity_factory.create(command.username, password_hash)
 
         try:
