@@ -23,7 +23,14 @@
                 <span>{{ city|default('Москва') }}</span>
             </div>
         </div>
-        <nav class="flex gap-6"></nav>
+        <nav class="flex gap-6">
+            <a href="{{ url_for('menu') }}" class="font-semibold hover:opacity-80 transition-opacity">Меню</a>
+            <a href="{{ url_for('login') }}" class="font-semibold hover:opacity-80 transition-opacity">Войти</a>
+            <a href="{{ url_for('cart') }}" class="font-semibold hover:opacity-80 transition-opacity relative">
+                Корзина
+                <span id="cart-counter" class="hidden absolute -top-2 -right-4 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"></span>
+            </a>
+        </nav>
     </header>
 
     <!-- Контейнер -->

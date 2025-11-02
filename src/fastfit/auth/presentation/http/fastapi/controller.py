@@ -25,7 +25,7 @@ auth_router = APIRouter()
 
 
 # GET endpoint to render the login page
-@auth_router.get("/login")
+@auth_router.get("/login", name="login")
 async def get_login(request: Request) -> HTMLResponse:
     return templates.TemplateResponse(
         "login.html",
@@ -75,7 +75,7 @@ async def post_login(
             verify_command = VerifyCodeCommand(phone_number=phone, code=code)
             auth_tokens: AuthTokens = await verify_code_use_case.execute(verify_command)
             # Set token in cookies (or session, depending on your auth mechanism)
-            response = RedirectResponse(url="/profile", status_code=303)
+            response = RedirectResponse(url="/menu", status_code=303)
             response.set_cookie(
                 key="access_token", value=auth_tokens.access_token, httponly=True
             )
@@ -101,7 +101,7 @@ async def post_login(
 
 
 # POST endpoint for logout
-@auth_router.post("/logout")
+@auth_router.post("/logout", name="logout")
 async def logout(
     request: Request, logout_use_case: Annotated[ILogoutUseCase, Depends()]
 ) -> RedirectResponse:

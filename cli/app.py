@@ -12,6 +12,8 @@ from fastfit.auth.infrastructure.di.container.container import (
 )
 from fastfit.identity.infrastructure.app.app import IdentityApp
 from fastfit.identity.infrastructure.di.container.container import IdentityContainer
+from fastfit.menu.infrastructure.app.app import MenuApp
+from fastfit.menu.infrastructure.di.container.container import DishContainer
 
 
 def main() -> App:
@@ -62,6 +64,10 @@ def main() -> App:
         token_refresher=token_container.token_refresher,
     )
 
+    dish_container = DishContainer(
+        uuid_generator=uuid_generator, query_executor=query_executor
+    )
+
     logger.info("building application...")
 
     app = App(logger, server)
@@ -69,6 +75,7 @@ def main() -> App:
         TokenApp(token_container, server),
         AuthApp(auth_container, server),
         IdentityApp(identity_container, server),
+        MenuApp(dish_container, server),
     )
     app.configure()
 

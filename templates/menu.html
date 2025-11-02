@@ -4,10 +4,10 @@
 
 {% block additional_styles %}
 .category-buttons {
-    scrollbar-width: none; /* Скрыть скроллбар в Firefox */
+    scrollbar-width: none;
 }
 .category-buttons::-webkit-scrollbar {
-    display: none; /* Скрыть скроллбар в Chrome/Safari */
+    display: none;
 }
 .calorie-select:focus + .calorie-tooltip {
     opacity: 1;
@@ -17,16 +17,22 @@
 
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <!-- Баннер -->
+    <!-- Success Message -->
+    {% if success_message %}
+    <p class="text-sm text-green-500 mb-4 text-center">{{ success_message }}</p>
+    {% endif %}
+
+    <!-- Banner -->
     <div class="relative bg-cover bg-center rounded-2xl p-12 text-center text-white mb-10" style="background-image: url('{{ banner_image|default('https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=1200') }}')">
         <div class="absolute inset-0 bg-black opacity-40 rounded-2xl"></div>
         <div class="relative z-10">
             <h1 class="text-4xl sm:text-5xl font-bold mb-4">{{ banner_title|default('Здоровая еда с FastFit') }}</h1>
             <p class="text-lg sm:text-xl mb-6">{{ banner_subtitle|default('Вкусные и полезные блюда с доставкой или самовывозом') }}</p>
+            <a href="{{ url_for('menu') }}" class="inline-block bg-green-500 text-white py-3 px-8 rounded-full font-semibold hover:bg-green-600 transition-colors">Посмотреть меню</a>
         </div>
     </div>
 
-    <!-- Фильтры -->
+    <!-- Filters -->
     <div class="bg-white p-6 rounded-lg shadow-md mb-10 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-6">
         <div class="flex-1">
             <h3 class="text-lg font-semibold mb-3">Категории</h3>
@@ -49,7 +55,7 @@
         </div>
     </div>
 
-    <!-- Меню -->
+    <!-- Menu -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {% for item in menu_items %}
         <div class="menu-item bg-white rounded-2xl shadow-md overflow-hidden transform hover:-translate-y-1 transition-transform" data-category="{{ item.category }}" data-calories="{{ item.calories }}">
@@ -58,7 +64,11 @@
                 <h3 class="text-lg font-semibold mb-2">{{ item.name }}</h3>
                 <p class="text-sm text-gray-600 mb-4">{{ item.description }}</p>
                 <p class="text-sm text-gray-600 mb-4">{{ item.calories }} ккал</p>
-                <button class="bg-orange-500 text-white py-2 px-6 rounded-full font-semibold hover:bg-orange-600 transition-colors">{{ item.price }} ₽</button>
+                <form method="POST" action="/cart/add">
+                    <input type="hidden" name="dish_id" value="{{ item.id }}">
+                    <input type="number" name="quantity" value="1" min="1" class="w-16 text-center border border-gray-300 rounded-lg mb-2">
+                    <button type="submit" class="bg-orange-500 text-white py-2 px-6 rounded-full font-semibold hover:bg-orange-600 transition-colors">Добавить в корзину ({{ item.price }} ₽)</button>
+                </form>
             </div>
         </div>
         {% endfor %}
@@ -68,12 +78,11 @@
 
 {% block scripts %}
 <script>
-    // Интерактивность фильтров
+    // Existing filter logic (unchanged)
     const categoryButtons = document.querySelectorAll('.category-buttons .filter-btn');
     const calorieSelect = document.getElementById('calories');
     const menuItems = document.querySelectorAll('.menu-item');
 
-    // Переключение активной категории
     categoryButtons.forEach(button => {
         button.addEventListener('click', () => {
             categoryButtons.forEach(btn => btn.classList.remove('bg-orange-500', 'text-white', 'border-orange-500'));
@@ -82,10 +91,8 @@
         });
     });
 
-    // Фильтр по калориям
     calorieSelect.addEventListener('change', filterMenu);
 
-    // Фильтрация меню
     function filterMenu() {
         const activeCategory = document.querySelector('.category-buttons .filter-btn.bg-orange-500')?.dataset.category || 'all';
         const activeCalories = calorieSelect.value;
@@ -110,10 +117,8 @@
         });
     }
 
-    // Установить "Все" как активную категорию по умолчанию
     document.querySelector('.category-buttons .filter-btn[data-category="all"]').classList.add('bg-orange-500', 'text-white', 'border-orange-500');
 
-    // Drag-to-scroll для категорий
     const categoryContainer = document.querySelector('.category-buttons');
     let isDown = false;
     let startX;

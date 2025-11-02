@@ -1,5 +1,5 @@
 from fastfit.menu.domain.entities.dish import Dish
-from fastfit.menu.domain.value_objects.dish_filters import DishFilters, DishFilterType
+from fastfit.menu.domain.value_objects.dish_filters import DishFilters
 from fastfit.menu.domain.value_objects.dish_name import DishName
 from fastfit.menu.domain.value_objects.ingredients import Ingredients
 from fastfit.menu.domain.value_objects.money import Money
@@ -21,7 +21,7 @@ class DishMapper:
                 model.calories, model.proteins, model.fats, model.carbohydrates
             ),
             ingredients=Ingredients.create(model.ingredients),
-            filters=DishFilters.create([DishFilterType(f) for f in model.filters]),
+            filters=DishFilters.create(model.filters),
             category_id=model.category_id,
             restaurant_id=model.restaurant_id,
         )
@@ -39,7 +39,7 @@ class DishMapper:
             fats=entity.nutritional_info.fats,
             carbohydrates=entity.nutritional_info.carbohydrates,
             ingredients=entity.ingredients.items,
-            filters=[f.value for f in entity.filters.filters],
+            filters=entity.filters.filters,
             category_id=entity.category_id,
             restaurant_id=entity.restaurant_id,
         )

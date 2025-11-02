@@ -21,3 +21,4 @@ class DishReadModel:
     filters: list[DishFilterType]
     category: CategoryReadModel
     restaurant_id: UUID
+    image: str | None = None
