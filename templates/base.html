@@ -25,7 +25,11 @@
         </div>
         <nav class="flex gap-6">
             <a href="{{ url_for('menu') }}" class="font-semibold hover:opacity-80 transition-opacity">Меню</a>
-            <a href="{{ url_for('login') }}" class="font-semibold hover:opacity-80 transition-opacity">Войти</a>
+            {% if request.cookies.get('access_token') %}
+                <a href="{{ url_for('logout') }}" class="font-semibold hover:opacity-80 transition-opacity">Выйти</a>
+            {% else %}
+                <a href="{{ url_for('login') }}" class="font-semibold hover:opacity-80 transition-opacity">Войти</a>
+            {% endif %}
             <a href="{{ url_for('cart') }}" class="font-semibold hover:opacity-80 transition-opacity relative">
                 Корзина
                 <span id="cart-counter" class="hidden absolute -top-2 -right-4 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"></span>

@@ -1,7 +1,8 @@
 from typing import Annotated
+from urllib.parse import quote
 
-from fastapi import APIRouter, Depends, Form, HTTPException, Request, Response
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi import APIRouter, Depends, Form, Request, Response
+from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastfit.auth.application.dtos.commands.logout_command import LogoutCommand
 from fastfit.auth.application.dtos.models.auth_tokens import AuthTokens
@@ -26,7 +27,10 @@ auth_router = APIRouter()
 
 # GET endpoint to render the login page
 @auth_router.get("/login", name="login")
-async def get_login(request: Request) -> HTMLResponse:
+async def get_login(request: Request) -> Response:
+    if request.cookies.get("access_token"):
+        return RedirectResponse(url="/menu", status_code=303)
+
     return templates.TemplateResponse(
         "login.html",
         {
@@ -94,29 +98,33 @@ async def post_login(
                 "button_text": "Получить код" if code is None else "Войти",
                 "login_button_text": "Войти",
                 "form_description": "Мы отправим код подтверждения на ваш номер телефона.",
-                "error_message": str(e),
+                "error_message": quote(str(e)),
                 "show_code_field": code is not None,
             },
         )
 
 
 # POST endpoint for logout
-@auth_router.post("/logout", name="logout")
+@auth_router.get("/logout", name="logout")
 async def logout(
     request: Request, logout_use_case: Annotated[ILogoutUseCase, Depends()]
 ) -> RedirectResponse:
     try:
-        token = request.cookies.get("auth_token")
+        token = request.cookies.get("refresh_token")
         if not token:
-            raise HTTPException(status_code=400, detail="No active session")
+            return RedirectResponse(url="/menu", status_code=303)
+
         command = LogoutCommand(refresh_token=token)
         await logout_use_case.execute(command)
+
         # Clear the auth token cookie and redirect to login
-        response = RedirectResponse(url="/login", status_code=303)
-        response.delete_cookie("auth_token")
+        response = RedirectResponse(url="/menu", status_code=303)
+        response.delete_cookie("refresh_token")
+        response.delete_cookie("access_token")
+
         return response
     except Exception as e:
         # Redirect to login with an error message (could be stored in session or query param)
-        response = RedirectResponse(url="/login", status_code=303)
-        response.set_cookie(key="error_message", value=str(e), httponly=True)
+        response = RedirectResponse(url="/menu", status_code=303)
+        response.set_cookie(key="error_message", value=quote(str(e)), httponly=True)
         return response
