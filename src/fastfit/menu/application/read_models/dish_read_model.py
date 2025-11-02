@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from decimal import Decimal
 from uuid import UUID
 
+from fastfit.menu.application.read_models.category_read_model import CategoryReadModel
 from fastfit.menu.domain.value_objects.dish_filters import DishFilterType
 
 
@@ -18,5 +19,5 @@ class DishReadModel:
     carbohydrates: Decimal
     ingredients: list[str]
     filters: list[DishFilterType]
-    category_id: UUID
+    category: CategoryReadModel
     restaurant_id: UUID

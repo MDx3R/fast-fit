@@ -8,7 +8,7 @@ from fastfit.menu.domain.entities.dish import Dish
 from fastfit.menu.infrastructure.database.postgres.sqlalchemy.mappers.dish_mapper import (
     DishMapper,
 )
-from fastfit.menu.infrastructure.database.postgres.sqlalchemy.models.dish_base import (
+from fastfit.menu.infrastructure.database.postgres.sqlalchemy.models.models import (
     DishBase,
 )
 from sqlalchemy import delete, select

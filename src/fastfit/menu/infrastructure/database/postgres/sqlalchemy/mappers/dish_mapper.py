@@ -4,7 +4,7 @@ from fastfit.menu.domain.value_objects.dish_name import DishName
 from fastfit.menu.domain.value_objects.ingredients import Ingredients
 from fastfit.menu.domain.value_objects.money import Money
 from fastfit.menu.domain.value_objects.nutritional_info import NutritionalInfo
-from fastfit.menu.infrastructure.database.postgres.sqlalchemy.models.dish_base import (
+from fastfit.menu.infrastructure.database.postgres.sqlalchemy.models.models import (
     DishBase,
 )
 
