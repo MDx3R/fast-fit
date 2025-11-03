@@ -29,5 +29,33 @@ services:
       postgres:
         condition: service_healthy
     volumes:
-      - .:/app
+      - ./migrations:/app/migrations
     command: ["poetry", "run", "alembic", "upgrade", "head"]
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8000:8000"
+    # NOTE: environment overrides env_file with proper DB_PORT and DB_HOST
+    # regardless of launch env (i.e. local, dev or prod and etc.)
+    environment:
+      DB_PORT: 5432
+      DB_HOST: postgres
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
+    env_file:
+      - .env
+    volumes:
+      - ./templates:/app/templates
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - app
