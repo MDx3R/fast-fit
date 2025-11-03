@@ -13,6 +13,31 @@
     opacity: 1;
     transform: translateY(0);
 }
+.nutrition-tooltip {
+    position: absolute;
+    background-color: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 8px 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    pointer-events: none;
+}
+.menu-item:hover .nutrition-tooltip {
+    opacity: 1;
+    transform: translateY(0);
+}
+.quantity-input::-webkit-outer-spin-button,
+.quantity-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.quantity-input {
+    -moz-appearance: textfield;
+}
 {% endblock %}
 
 {% block content %}
@@ -56,15 +81,42 @@
     <!-- Menu -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {% for item in menu_items %}
-        <div class="menu-item bg-white rounded-2xl shadow-md overflow-hidden transform hover:-translate-y-1 transition-transform" data-category="{{ item.category }}" data-calories="{{ item.calories }}">
+        <div class="menu-item bg-white rounded-2xl shadow-md overflow-hidden transform hover:-translate-y-1 transition-transform relative flex flex-col h-full"
+             data-category="{{ item.category }}" data-calories="{{ item.calories }}" data-dish-id="{{ item.id }}">
+
             <img src="{{ item.image }}" alt="{{ item.name }}" class="w-full h-48 object-cover">
-            <div class="p-5 text-center">
+            <div class="p-5 text-center flex flex-col flex-grow">
                 <h3 class="text-lg font-semibold mb-2">{{ item.name }}</h3>
                 <p class="text-sm text-gray-600 mb-4">{{ item.description }}</p>
                 <p class="text-sm text-gray-600 mb-4">{{ item.calories }} ккал</p>
-                <div class="flex justify-center items-center gap-2">
-                    <input type="number" class="quantity-input w-16 text-center border border-gray-300 rounded-lg" value="1" min="1" data-dish-id="{{ item.id }}">
-                    <button class="add-to-cart bg-orange-500 text-white py-2 px-6 rounded-full font-semibold hover:bg-orange-600 transition-colors" data-dish-id="{{ item.id }}" data-name="{{ item.name }}" data-price="{{ item.price }}" data-calories="{{ item.calories }}" data-protein="{{ item.protein }}" data-fat="{{ item.fat }}" data-carbs="{{ item.carbs }}" data-image="{{ item.image }}">Добавить в корзину ({{ item.price }} ₽)</button>
+                <!-- Nutrition Tooltip -->
+                <div class="nutrition-tooltip" style="bottom: 100%; left: 50%; transform: translateX(-50%) translateY(-10px);">
+                    <p class="text-sm text-gray-800">Калории: {{ item.calories }} ккал</p>
+                    <p class="text-sm text-gray-800">Белки: {{ item.protein }} г</p>
+                    <p class="text-sm text-gray-800">Жиры: {{ item.fat }} г</p>
+                    <p class="text-sm text-gray-800">Углеводы: {{ item.carbs }} г</p>
+                </div>
+                <!-- Cart Controls -->
+                <div class="flex justify-center items-center gap-2 mt-auto">
+                    <div class="cart-controls" data-dish-id="{{ item.id }}">
+                        <button class="add-to-cart bg-orange-500 text-white py-2 px-6 rounded-full font-semibold hover:bg-orange-600 transition-colors"
+                                data-dish-id="{{ item.id }}"
+                                data-name="{{ item.name }}"
+                                data-price="{{ item.price }}"
+                                data-calories="{{ item.calories }}"
+                                data-protein="{{ item.protein }}"
+                                data-fat="{{ item.fat }}"
+                                data-carbs="{{ item.carbs }}"
+                                data-image="{{ item.image }}">
+                            В корзину ({{ item.price }} ₽)
+                        </button>
+
+                        <div class="quantity-controls hidden flex items-center gap-2">
+                            <button class="decrease-quantity w-8 h-8 bg-gray-200 rounded-full hover:bg-gray-300 transition-colors">-</button>
+                            <input type="number" class="quantity-input w-12 text-center border border-gray-300 rounded-lg" value="0" min="0">
+                            <button class="increase-quantity w-8 h-8 bg-gray-200 rounded-full hover:bg-gray-300 transition-colors">+</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -83,18 +135,36 @@
     function saveCart(cart) {
         localStorage.setItem('cart', JSON.stringify(cart));
         updateCartCounter();
+        updateAllCartControls();
     }
 
-    function addToCart(dish) {
+    function addToCart(dish, quantity = 1) {
+        if (quantity < 1) {
+            showCartMessage('Количество должно быть не менее 1');
+            return;
+        }
         const cart = getCart();
         const existingItem = cart.find(item => item.dish_id === dish.dish_id);
         if (existingItem) {
-            existingItem.quantity += dish.quantity;
+            existingItem.quantity += quantity;
         } else {
-            cart.push(dish);
+            cart.push({ ...dish, quantity });
         }
         saveCart(cart);
         showCartMessage(`Добавлено: ${dish.name}`);
+    }
+
+    function updateCartItemQuantity(dishId, newQuantity) {
+        const cart = getCart();
+        const itemIndex = cart.findIndex(item => item.dish_id === dishId);
+        if (itemIndex !== -1) {
+            if (newQuantity <= 0) {
+                cart.splice(itemIndex, 1);
+            } else {
+                cart[itemIndex].quantity = newQuantity;
+            }
+            saveCart(cart);
+        }
     }
 
     function updateCartCounter() {
@@ -110,19 +180,35 @@
     function showCartMessage(message) {
         const messageDiv = document.getElementById('cart-message');
         messageDiv.textContent = message;
-        // messageDiv.classList.remove('hidden');
-        // setTimeout(() => messageDiv.classList.add('hidden'), 3000);
+        messageDiv.classList.remove('hidden');
+        setTimeout(() => messageDiv.classList.add('hidden'), 3000);
     }
 
-    // Add to cart event listeners
+    function updateAllCartControls() {
+        const cart = getCart();
+        document.querySelectorAll('.menu-item').forEach(item => {
+            const dishId = item.dataset.dishId;
+            const cartControls = item.querySelector('.cart-controls');
+            const addButton = cartControls.querySelector('.add-to-cart');
+            const quantityControls = cartControls.querySelector('.quantity-controls');
+            const quantityInput = quantityControls.querySelector('.quantity-input');
+            const cartItem = cart.find(cartItem => cartItem.dish_id === dishId);
+
+            if (cartItem) {
+                addButton.classList.add('hidden');
+                quantityControls.classList.remove('hidden');
+                quantityInput.value = cartItem.quantity;
+            } else {
+                addButton.classList.remove('hidden');
+                quantityControls.classList.add('hidden');
+                quantityInput.value = 0;
+            }
+        });
+    }
+
+    // Event listeners for cart controls
     document.querySelectorAll('.add-to-cart').forEach(button => {
         button.addEventListener('click', () => {
-            const quantityInput = button.parentElement.querySelector('.quantity-input');
-            const quantity = parseInt(quantityInput.value);
-            if (quantity < 1) {
-                showCartMessage('Количество должно быть не менее 1');
-                return;
-            }
             const dish = {
                 dish_id: button.dataset.dishId,
                 name: button.dataset.name,
@@ -131,15 +217,47 @@
                 protein: parseFloat(button.dataset.protein),
                 fat: parseFloat(button.dataset.fat),
                 carbs: parseFloat(button.dataset.carbs),
-                image: button.dataset.image,
-                quantity: quantity
+                image: button.dataset.image
             };
             addToCart(dish);
         });
     });
 
-    // Initialize cart counter on page load
-    document.addEventListener('DOMContentLoaded', updateCartCounter);
+    document.querySelectorAll('.increase-quantity').forEach(button => {
+        button.addEventListener('click', () => {
+            const dishId = button.closest('.cart-controls').dataset.dishId;
+            const quantityInput = button.closest('.quantity-controls').querySelector('.quantity-input');
+            const newQuantity = parseInt(quantityInput.value) + 1;
+            updateCartItemQuantity(dishId, newQuantity);
+        });
+    });
+
+    document.querySelectorAll('.decrease-quantity').forEach(button => {
+        button.addEventListener('click', () => {
+            const dishId = button.closest('.cart-controls').dataset.dishId;
+            const quantityInput = button.closest('.quantity-controls').querySelector('.quantity-input');
+            const newQuantity = parseInt(quantityInput.value) - 1;
+            updateCartItemQuantity(dishId, newQuantity);
+        });
+    });
+
+    document.querySelectorAll('.quantity-input').forEach(input => {
+        input.addEventListener('input', () => {
+            const dishId = input.closest('.cart-controls').dataset.dishId;
+            const newQuantity = parseInt(input.value);
+            if (newQuantity >= 0) {
+                updateCartItemQuantity(dishId, newQuantity);
+            } else {
+                input.value = getCart().find(item => item.dish_id === dishId)?.quantity || 0;
+            }
+        });
+    });
+
+    // Initialize cart controls and counter on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        updateCartCounter();
+        updateAllCartControls();
+    });
 
     // Existing filter logic
     const categoryButtons = document.querySelectorAll('.category-buttons .filter-btn');
