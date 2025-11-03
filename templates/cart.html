@@ -310,15 +310,15 @@
                 if (response.ok) {
                     const data = await response.json();
                     localStorage.removeItem('cart');
-                    showNotification('Заказ успешно создан!', 'success');
+                    // showNotification('Заказ успешно создан!', 'success');
                     setTimeout(() => {
-                        window.location.href = `/order/${data.order_id}`;  // Redirect to order confirmation
-                    }, 1500);
+                        window.location.href = `/orders/${data.order_id}`;  // Redirect to order confirmation
+                    }, 0);
                 } else {
-                    showNotification('Ошибка при создании заказа', 'error');
+                    showNotification(`Ошибка при создании заказа ${await response.json()}`, 'error');
                 }
             } catch (error) {
-                showNotification('Произошла ошибка', 'error');
+                showNotification(`Произошла ошибка ${error}`, 'error');
             }
         });
     }

@@ -86,7 +86,7 @@ class OrderReadRepository(IOrderReadRepository):
         ]
         total_price = Decimal(0)
         for i in items:
-            total_price += i.price
+            total_price += i.price * i.quantity
 
         return OrderReadModel(
             order_id=model.order_id,

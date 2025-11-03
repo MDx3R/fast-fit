@@ -45,13 +45,40 @@
                     <div class="flex justify-between items-center">
                         <div>
                             <h3 class="text-md font-semibold">
-                                <a href="{{ url_for('order_details', order_id=order.id) }}" class="text-orange-500 hover:underline">Заказ #{{ order.id }}</a>
+                                <a href="{{ url_for('order_details', order_id=order.id) }}" class="text-orange-500 hover:underline">Заказ от {{ order.date.strftime('%d.%m.%Y') }}</a>
                             </h3>
                             <p class="text-sm text-gray-600">{{ order.date.strftime('%d.%m.%Y %H:%M') }}</p>
                         </div>
                         <p class="text-sm font-semibold text-gray-800">{{ order.total }} ₽</p>
                     </div>
-                    <p class="text-sm text-gray-600">{{ order.units|join(', ') }}</p>
+                    <ul class="text-sm text-gray-600 mb-2">
+                        {% for item in order.units %}
+                        <li>
+                            {{ item.quantity }}x {{ item.dish.name }}
+                            <span class="text-xs text-gray-500">
+                                (Калории: {{ (item.quantity * item.dish.calories)|round(0) }} ккал |
+                                Белки: {{ (item.quantity * item.dish.proteins)|round(0) }} г |
+                                Жиры: {{ (item.quantity * item.dish.fats)|round(0) }} г |
+                                Углеводы: {{ (item.quantity * item.dish.carbohydrates)|round(0) }} г)
+                            </span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% set totals = namespace(calories=0, proteins=0, fats=0, carbs=0) %}
+
+                    {% for item in order.units %}
+                        {% set totals.calories = totals.calories + item.quantity * item.dish.calories %}
+                        {% set totals.proteins = totals.proteins + item.quantity * item.dish.proteins %}
+                        {% set totals.fats = totals.fats + item.quantity * item.dish.fats %}
+                        {% set totals.carbs = totals.carbs + item.quantity * item.dish.carbohydrates %}
+                    {% endfor %}
+                    <p class="text-sm text-gray-600 mb-2">
+                        Общий КБЖУ:<br>
+                        Калории: {{ totals.calories|round(0) }} ккал |
+                        Белки: {{ totals.proteins|round(0) }} г |
+                        Жиры: {{ totals.fats|round(0) }} г |
+                        Углеводы: {{ totals.carbs|round(0) }} г
+                    </p>
                     <p class="text-sm font-semibold {{ order.status_color }}">{{ order.status|capitalize }}</p>
                 </div>
                 {% endfor %}

@@ -4,7 +4,7 @@ from typing import Annotated, Any
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastfit.identity.domain.value_objects.descriptor import IdentityDescriptor
 from fastfit.identity.presentation.http.fastapi.auth import get_descriptor
@@ -57,8 +57,19 @@ async def get_profile(
                 "id": str(order.order_id),
                 "date": order.created_at,
                 "units": [
-                    f"{item.quantity}x {item.dish_id}" for item in order.items
-                ],  # Simplified; replace with actual dish names if available
+                    {
+                        "quantity": item.quantity,
+                        "dish": {
+                            "name": item.dish.name,
+                            "calories": float(item.dish.calories),
+                            "proteins": float(item.dish.proteins),
+                            "fats": float(item.dish.fats),
+                            "carbohydrates": float(item.dish.carbohydrates),
+                        },
+                        "price": float(item.price),
+                    }
+                    for item in order.items
+                ],
                 "total": f"{order.total_price:.2f}",
                 "status": order.status.value,
                 "status_color": {
@@ -118,10 +129,21 @@ async def get_order_details(
             raise HTTPException(status_code=403, detail="Access denied")
         formatted_order: dict[str, Any] = {
             "id": str(order.order_id)[:5],
-            "date": order.created_at.strftime("%d.%m.%Y %H:%M"),
+            "date": order.created_at,
             "units": [
-                f"{item.quantity}x {item.dish_id}" for item in order.items
-            ],  # Replace with dish names
+                {
+                    "quantity": item.quantity,
+                    "dish": {
+                        "name": item.dish.name,
+                        "calories": float(item.dish.calories),
+                        "proteins": float(item.dish.proteins),
+                        "fats": float(item.dish.fats),
+                        "carbohydrates": float(item.dish.carbohydrates),
+                    },
+                    "price": float(item.price),
+                }
+                for item in order.items
+            ],
             "total": f"{order.total_price:.2f}",
             "status": order.status.value.capitalize(),
             "status_color": {
@@ -146,7 +168,6 @@ class CreateOrderRequest(BaseModel):
     items: list[dict[str, Any]]
     delivery_type: DeliveryType
     delivery_address: str | None = None
-    restaurant_id: UUID | None = None
     payment_method: str  # "card" or "cash"
 
 
@@ -156,7 +177,7 @@ async def create_order(
     order_data: CreateOrderRequest,
     user: Annotated[IdentityDescriptor, Depends(get_descriptor)],
     create_order_use_case: Annotated[ICreateOrderUseCase, Depends()],
-) -> RedirectResponse:
+) -> JSONResponse:
     try:
         # Validate and map data to CreateOrderCommand
         # Assume CreateOrderCommand structure based on OrderReadModel
@@ -178,12 +199,12 @@ async def create_order(
                 if order_data.delivery_type == DeliveryType.DELIVERY
                 else None
             ),
-            restaurant_id=order_data.restaurant_id or DEFAULT_RESTAURANT_ID,
+            restaurant_id=DEFAULT_RESTAURANT_ID,
         )
         order_id: UUID = await create_order_use_case.execute(command)
-        response = RedirectResponse(url=f"/orders/{order_id}", status_code=303)
-
-        return response
+        return JSONResponse(
+            content={"order_id": str(order_id), "message": "Order created successfully"}
+        )
     except Exception as e:
         raise HTTPException(
             status_code=400, detail=f"Error creating order: {e!s}"

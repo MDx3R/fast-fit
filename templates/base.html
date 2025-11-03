@@ -15,26 +15,30 @@
 </head>
 <body class="bg-gray-100 text-gray-800">
     <!-- Шапка -->
-    <header class="bg-gradient-to-r from-orange-500 to-orange-400 text-white py-4 px-6 flex justify-between items-center shadow-md sticky top-0 z-50">
-        <div class="flex items-center gap-4">
-            <div class="text-2xl font-bold uppercase tracking-wide">FastFit</div>
-            <div class="flex items-center gap-2 text-lg font-semibold cursor-pointer">
-                <span>📍</span>
-                <span>{{ city|default('Москва') }}</span>
+    <header class="bg-gradient-to-r from-orange-500 to-orange-400 text-white py-4 shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+            <!-- Левая часть -->
+            <div class="flex items-center gap-4">
+                <a href="{{ url_for('menu') }}" class="text-2xl font-bold uppercase tracking-wide">FastFit</a>
+                <div class="flex items-center gap-2 text-lg font-semibold cursor-pointer">
+                    <span>📍</span>
+                    <span>{{ city|default('Москва') }}</span>
+                </div>
             </div>
+            <!-- Навигация -->
+            <nav class="flex gap-6">
+                <a href="{{ url_for('menu') }}" class="font-semibold hover:opacity-80 transition-opacity">Меню</a>
+                {% if request.cookies.get('access_token') %}
+                    <a href="{{ url_for('profile') }}" class="font-semibold hover:opacity-80 transition-opacity">Профиль</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="font-semibold hover:opacity-80 transition-opacity">Войти</a>
+                {% endif %}
+                <a href="{{ url_for('cart') }}" class="font-semibold hover:opacity-80 transition-opacity relative">
+                    Корзина
+                    <span id="cart-counter" class="hidden absolute -top-2 -right-4 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"></span>
+                </a>
+            </nav>
         </div>
-        <nav class="flex gap-6">
-            <a href="{{ url_for('menu') }}" class="font-semibold hover:opacity-80 transition-opacity">Меню</a>
-            {% if request.cookies.get('access_token') %}
-                <a href="{{ url_for('profile') }}" class="font-semibold hover:opacity-80 transition-opacity">Профиль</a>
-            {% else %}
-                <a href="{{ url_for('login') }}" class="font-semibold hover:opacity-80 transition-opacity">Войти</a>
-            {% endif %}
-            <a href="{{ url_for('cart') }}" class="font-semibold hover:opacity-80 transition-opacity relative">
-                Корзина
-                <span id="cart-counter" class="hidden absolute -top-2 -right-4 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"></span>
-            </a>
-        </nav>
     </header>
 
     <!-- Контейнер -->

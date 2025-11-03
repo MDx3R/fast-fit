@@ -1,21 +1,50 @@
 {% extends "base.html" %}
 
-{% block title %}Заказ #{{ order.id }}{% endblock %}
+{% block title %}Заказ от {{ order.date.strftime('%d.%m.%Y') }}{% endblock %}
 
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <h1 class="text-3xl font-bold text-orange-500 mb-8">Заказ #{{ order.id }}</h1>
+    <h1 class="text-3xl font-bold text-orange-500 mb-8">Заказ от {{ order.date.strftime('%d.%m.%Y') }}</h1>
     <div class="bg-white p-6 rounded-2xl shadow-md">
-        <p class="text-sm text-gray-600 mb-2">Дата: {{ order.date }}</p>
+        <p class="text-sm text-gray-600 mb-2">Дата: {{ order.date.strftime('%d.%m.%Y %H:%M') }}</p>
         <p class="text-sm text-gray-600 mb-2">Тип доставки: {{ order.delivery_type|capitalize }}</p>
-        <p class="text-sm text-gray-600 mb-2">Адрес: {{ order.delivery_address }}</p>
-        <p class="text-sm text-gray-600 mb-2">Статус: <span class="{{ order.status_color }}">{{ order.status }}</span></p>
+        <p class="text-sm text-gray-600 mb-2">Адрес: {{ order.delivery_address|default('Самовывоз') }}</p>
+        <p class="text-sm text-gray-600 mb-2">Статус: <span class="{{ order.status_color }}">{{ order.status|capitalize }}</span></p>
+        
         <h2 class="text-lg font-semibold mb-2">Состав заказа</h2>
-        <ul class="text-sm text-gray-600 mb-4">
+        <ul class="text-sm text-gray-600 mb-4 space-y-4">
             {% for item in order.units %}
-            <li>{{ item }}</li>
+            <li class="border-b pb-2">
+                <div class="flex justify-between">
+                    <span>{{ item.quantity }}x {{ item.dish.name }}</span>
+                    <span>{{ (item.quantity * item.price)|round(2) }} ₽</span>
+                </div>
+                <p class="text-xs text-gray-500 mt-1">
+                    Калории: {{ (item.quantity * item.dish.calories)|round(0) }} ккал |
+                    Белки: {{ (item.quantity * item.dish.proteins)|round(0) }} г |
+                    Жиры: {{ (item.quantity * item.dish.fats)|round(0) }} г |
+                    Углеводы: {{ (item.quantity * item.dish.carbohydrates)|round(0) }} г
+                </p>
+            </li>
             {% endfor %}
         </ul>
+        
+        <h2 class="text-lg font-semibold mb-2">Общий КБЖУ</h2>
+        {% set totals = namespace(calories=0, proteins=0, fats=0, carbs=0) %}
+
+        {% for item in order.units %}
+            {% set totals.calories = totals.calories + item.quantity * item.dish.calories %}
+            {% set totals.proteins = totals.proteins + item.quantity * item.dish.proteins %}
+            {% set totals.fats = totals.fats + item.quantity * item.dish.fats %}
+            {% set totals.carbs = totals.carbs + item.quantity * item.dish.carbohydrates %}
+        {% endfor %}
+        <p class="text-sm text-gray-600 mb-4">
+            Калории: {{ totals.calories|round(0) }} ккал<br>
+            Белки: {{ totals.proteins|round(0) }} г<br>
+            Жиры: {{ totals.fats|round(0) }} г<br>
+            Углеводы: {{ totals.carbs|round(0) }} г
+        </p>
+        
         <p class="text-lg font-bold text-orange-500">Итого: {{ order.total }} ₽</p>
     </div>
 </div>

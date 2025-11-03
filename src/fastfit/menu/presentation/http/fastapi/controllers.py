@@ -124,8 +124,8 @@ async def get_cart(
                 {"id": "cash", "name": "Наличными"},
             ],
             "restaurants": [
-                {"id": "1", "name": "FastFit Москва"},
-                {"id": "2", "name": "FastFit Санкт-Петербург"},
+                {"id": None, "name": "FastFit Москва"},
+                {"id": None, "name": "FastFit Санкт-Петербург"},
             ],
             "user_address": "",  # Replace with actual user address if authenticated
         },
