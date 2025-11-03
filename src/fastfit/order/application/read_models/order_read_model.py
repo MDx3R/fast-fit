@@ -3,6 +3,7 @@ from datetime import datetime
 from decimal import Decimal
 from uuid import UUID
 
+from fastfit.menu.application.read_models.dish_read_model import DishReadModel
 from fastfit.order.domain.value_objects.delivery_type import DeliveryType
 from fastfit.order.domain.value_objects.order_status import OrderStatus
 
@@ -10,6 +11,7 @@ from fastfit.order.domain.value_objects.order_status import OrderStatus
 @dataclass(frozen=True)
 class OrderItemReadModel:
     dish_id: UUID
+    dish: DishReadModel
     quantity: int
     price: Decimal
     currency: str

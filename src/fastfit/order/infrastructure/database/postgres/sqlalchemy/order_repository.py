@@ -12,6 +12,7 @@ from fastfit.order.infrastructure.database.postgres.sqlalchemy.models.order_base
     OrderBase,
 )
 from sqlalchemy import select
+from sqlalchemy.orm import joinedload
 
 
 class OrderRepository(IOrderRepository):
@@ -19,7 +20,11 @@ class OrderRepository(IOrderRepository):
         self.executor = executor
 
     async def get_by_id(self, order_id: UUID) -> Order:
-        stmt = select(OrderBase).where(OrderBase.order_id == order_id)
+        stmt = (
+            select(OrderBase)
+            .where(OrderBase.order_id == order_id)
+            .options(joinedload(OrderBase.items))
+        )
         model = await self.executor.execute_scalar_one(stmt)
         if not model:
             raise ValueError(f"Order with id {order_id} not found")

@@ -59,6 +59,6 @@ class OrderMapper:
                 entity.delivery_address.value if entity.delivery_address else None
             ),
             restaurant_id=entity.restaurant_id,
-            created_at=entity.created_at,
+            created_at=entity.created_at.value,
             items=items,
         )

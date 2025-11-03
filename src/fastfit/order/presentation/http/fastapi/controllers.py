@@ -1,18 +1,26 @@
 from datetime import datetime, timedelta
+from decimal import Decimal
 from typing import Annotated, Any
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from fastfit.identity.domain.entity.identity import Identity
 from fastfit.identity.domain.value_objects.descriptor import IdentityDescriptor
 from fastfit.identity.presentation.http.fastapi.auth import get_descriptor
+from fastfit.menu.presentation.http.fastapi.controllers import DEFAULT_RESTAURANT_ID
+from fastfit.order.application.dtos.commands.create_order_command import (
+    CreateOrderCommand,
+    OrderItemDTO,
+)
 from fastfit.order.application.dtos.queries.get_order_by_id_query import (
     GetOrderByIdQuery,
 )
 from fastfit.order.application.dtos.queries.get_orders_by_user_query import (
     GetOrdersByUserQuery,
+)
+from fastfit.order.application.interfaces.usecases.command.create_order_use_case import (
+    ICreateOrderUseCase,
 )
 from fastfit.order.application.interfaces.usecases.query.get_order_by_id_use_case import (
     IGetOrderByIdUseCase,
@@ -21,6 +29,8 @@ from fastfit.order.application.interfaces.usecases.query.get_orders_by_user_use_
     IGetOrdersByUserUseCase,
 )
 from fastfit.order.application.read_models.order_read_model import OrderReadModel
+from fastfit.order.domain.value_objects.delivery_type import DeliveryType
+from pydantic import BaseModel
 
 
 order_router = APIRouter()
@@ -46,7 +56,7 @@ async def get_profile(
             {
                 "id": str(order.order_id),
                 "date": order.created_at,
-                "items": [
+                "units": [
                     f"{item.quantity}x {item.dish_id}" for item in order.items
                 ],  # Simplified; replace with actual dish names if available
                 "total": f"{order.total_price:.2f}",
@@ -94,11 +104,11 @@ async def get_profile(
         ) from e
 
 
-@order_router.get("/order/{order_id}", name="order_details")
+@order_router.get("/orders/{order_id}", name="order_details")
 async def get_order_details(
     request: Request,
     order_id: UUID,
-    user: Annotated[Identity, Depends(get_descriptor)],
+    user: Annotated[IdentityDescriptor, Depends(get_descriptor)],
     order_use_case: Annotated[IGetOrderByIdUseCase, Depends()],
 ) -> HTMLResponse:
     try:
@@ -107,9 +117,9 @@ async def get_order_details(
         if order.user_id != user.identity_id:
             raise HTTPException(status_code=403, detail="Access denied")
         formatted_order: dict[str, Any] = {
-            "id": str(order.order_id),
+            "id": str(order.order_id)[:5],
             "date": order.created_at.strftime("%d.%m.%Y %H:%M"),
-            "items": [
+            "units": [
                 f"{item.quantity}x {item.dish_id}" for item in order.items
             ],  # Replace with dish names
             "total": f"{order.total_price:.2f}",
@@ -130,3 +140,51 @@ async def get_order_details(
         )
     except Exception as e:
         raise HTTPException(status_code=404, detail=f"Order not found: {e!s}") from e
+
+
+class CreateOrderRequest(BaseModel):
+    items: list[dict[str, Any]]
+    delivery_type: DeliveryType
+    delivery_address: str | None = None
+    restaurant_id: UUID | None = None
+    payment_method: str  # "card" or "cash"
+
+
+# POST endpoint to create an order
+@order_router.post("/orders")
+async def create_order(
+    order_data: CreateOrderRequest,
+    user: Annotated[IdentityDescriptor, Depends(get_descriptor)],
+    create_order_use_case: Annotated[ICreateOrderUseCase, Depends()],
+) -> RedirectResponse:
+    try:
+        # Validate and map data to CreateOrderCommand
+        # Assume CreateOrderCommand structure based on OrderReadModel
+        command = CreateOrderCommand(
+            user_id=user.identity_id,
+            phone_number=user.username,
+            items=[
+                OrderItemDTO(
+                    dish_id=UUID(item["dish_id"]),
+                    quantity=int(item["quantity"]),
+                    price=Decimal(item["price"]),
+                    currency="RUB",  # Assume RUB
+                )
+                for item in order_data.items
+            ],
+            delivery_type=DeliveryType(order_data.delivery_type),
+            delivery_address=(
+                order_data.delivery_address
+                if order_data.delivery_type == DeliveryType.DELIVERY
+                else None
+            ),
+            restaurant_id=order_data.restaurant_id or DEFAULT_RESTAURANT_ID,
+        )
+        order_id: UUID = await create_order_use_case.execute(command)
+        response = RedirectResponse(url=f"/orders/{order_id}", status_code=303)
+
+        return response
+    except Exception as e:
+        raise HTTPException(
+            status_code=400, detail=f"Error creating order: {e!s}"
+        ) from e

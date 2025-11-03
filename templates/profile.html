@@ -51,7 +51,7 @@
                         </div>
                         <p class="text-sm font-semibold text-gray-800">{{ order.total }} ₽</p>
                     </div>
-                    <p class="text-sm text-gray-600">{{ order.items|join(', ') }}</p>
+                    <p class="text-sm text-gray-600">{{ order.units|join(', ') }}</p>
                     <p class="text-sm font-semibold {{ order.status_color }}">{{ order.status|capitalize }}</p>
                 </div>
                 {% endfor %}

@@ -12,7 +12,7 @@
         <p class="text-sm text-gray-600 mb-2">Статус: <span class="{{ order.status_color }}">{{ order.status }}</span></p>
         <h2 class="text-lg font-semibold mb-2">Состав заказа</h2>
         <ul class="text-sm text-gray-600 mb-4">
-            {% for item in order.items %}
+            {% for item in order.units %}
             <li>{{ item }}</li>
             {% endfor %}
         </ul>

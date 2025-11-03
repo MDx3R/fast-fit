@@ -52,6 +52,7 @@ async def get_descriptor(
     request: Request,
     token: Annotated[str, Depends(get_access_token)],
     token_introspector: Annotated[ITokenIntrospector, Depends()],
+    _: Annotated[None, Depends(require_authenticated)],
 ) -> IdentityDescriptor:
     if hasattr(request.state, "user"):
         user: IdentityDescriptor = request.state.user
