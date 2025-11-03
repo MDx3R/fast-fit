@@ -17,12 +17,23 @@ from fastfit.menu.infrastructure.database.postgres.sqlalchemy.models.models impo
     CategoryBase,
     DishBase,
 )
+from fastfit.order.infrastructure.database.postgres.sqlalchemy.models.order_base import (
+    OrderBase,
+    OrderItemBase,
+)
 from sqlalchemy import Connection
 from sqlalchemy.ext.asyncio import AsyncEngine
 
 
 # Needed for proper database configuration, e.g. fkeys and tables
-__models__: list[type[Base]] = [IdentityBase, TokenBase, DishBase, CategoryBase]
+__models__: list[type[Base]] = [
+    IdentityBase,
+    TokenBase,
+    DishBase,
+    CategoryBase,
+    OrderBase,
+    OrderItemBase,
+]
 
 
 # this is the Alembic Config object, which provides
