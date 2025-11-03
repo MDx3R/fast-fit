@@ -31,4 +31,5 @@ class DishFactory(IDishFactory):
             filters=filters,
             category_id=data.category_id,
             restaurant_id=data.restaurant_id,
+            image=data.image,
         )

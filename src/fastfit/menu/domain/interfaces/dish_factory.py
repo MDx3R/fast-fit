@@ -21,6 +21,7 @@ class DishFactoryDTO:
     filters: list[DishFilterType]
     category_id: UUID
     restaurant_id: UUID
+    image: str | None
 
 
 class IDishFactory(ABC):

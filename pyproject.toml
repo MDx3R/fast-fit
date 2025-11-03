@@ -96,6 +96,9 @@ combine-as-imports = true
 known-first-party = ["conference"]
 lines-after-imports = 2
 
+[tool.ruff.lint.per-file-ignores]
+"cli/menu.py" = ["RUF001"]
+
 [tool.mypy]
 mypy_path = "src"
 python_version = 3.11

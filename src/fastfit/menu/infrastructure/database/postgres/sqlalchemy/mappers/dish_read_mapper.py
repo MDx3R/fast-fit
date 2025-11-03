@@ -26,4 +26,5 @@ class DishReadMapper:
             filters=[DishFilterType(f) for f in model.filters],
             category=category,
             restaurant_id=model.restaurant_id,
+            image=model.image,
         )

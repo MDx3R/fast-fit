@@ -29,6 +29,12 @@ DEFAULT_RESTAURANT_ID: UUID = UUID(int=0)
 
 
 # GET endpoint to render the menu page
+@menu_router.get("/", name="landing")
+async def get_landing(request: Request) -> HTMLResponse:
+    return templates.TemplateResponse("landing.html", {"request": request})
+
+
+# GET endpoint to render the menu page
 @menu_router.get("/menu", name="menu")
 async def get_menu(
     request: Request,

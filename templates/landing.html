@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block title %}FastFit - Здоровая еда быстро и вкусно!{% endblock %}
+
+{% block additional_styles %}
+.hero {
+    background-color: #FF6B00;
+    color: white;
+}
+.feature-card {
+    background-color: #FFF;
+    border: 2px solid #FF6B00;
+    border-radius: 20px;
+    padding: 20px;
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+.feature-card:hover {
+    transform: scale(1.05);
+}
+.popular-dish {
+    background-color: #FFF;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+.popular-dish:hover {
+    transform: translateY(-5px);
+}
+.popular-dish .content {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    padding: 16px;
+}
+.popular-dish .description {
+    flex-grow: 1; /* Растягивает описание, чтобы кнопка была внизу */
+}
+.popular-dish .add-button {
+    margin-top: auto; /* Привязывает кнопку к нижней части */
+}
+.review-card {
+    background-color: #FFF;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.review-card .review-text {
+    flex-grow: 1;
+}
+.review-card .review-author {
+    margin-top: auto; /* Привязывает имя автора к нижней части */
+}
+.cta-button {
+    background-color: #4CAF50;
+    color: white;
+    font-weight: bold;
+    border-radius: 50px;
+    padding: 15px 30px;
+    transition: background-color 0.3s ease;
+}
+.cta-button:hover {
+    background-color: #388E3C;
+}
+.emoji-large {
+    font-size: 3rem;
+    margin-bottom: 10px;
+}
+{% endblock %}
+
+{% block content %}
+<!-- Герой-секция: Большой баннер с ярким фоном, слоганом и призывом к действию -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-10 hero relative bg-cover bg-center rounded-2xl p-12 text-center mb-10" style="background-image: url('https://images.unsplash.com/photo-1490645935967-10de6ba17061?q=80&w=1200'); height: 30vh;">
+    <div class="absolute inset-0 bg-black opacity-40 rounded-2xl"></div>
+    <div class="relative z-10">
+        <h1 class="text-5xl font-bold mb-4 tracking-wide">FastFit — Вкусно, здорово и быстро! 🍎🚀</h1>
+        <p class="text-2xl mb-6">Свежие блюда для твоего активного дня. Доставка или самовывоз за минуты!</p>
+        <a href="{{ url_for('menu') }}" class="cta-button inline-block text-lg hover:shadow-lg">Заказать сейчас</a>
+    </div>
+</section>
+
+<!-- Секция преимуществ: Три карточки с иконками и описаниями -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <h2 class="text-3xl font-bold text-orange-500 mb-8 text-center">Почему FastFit? 😎</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="feature-card">
+            <div class="emoji-large">🥗</div>
+            <h3 class="text-xl font-semibold mb-2">Здоровые ингредиенты</h3>
+            <p class="text-sm text-gray-600">Только свежие продукты без лишних калорий. Баланс КБЖУ в каждом блюде!</p>
+        </div>
+        <div class="feature-card">
+            <div class="emoji-large">🚀</div>
+            <h3 class="text-xl font-semibold mb-2">Быстрая доставка</h3>
+            <p class="text-sm text-gray-600">Доставим за 30 минут или забери сам. Вкусно и без ожидания!</p>
+        </div>
+        <div class="feature-card">
+            <div class="emoji-large">💚</div>
+            <h3 class="text-xl font-semibold mb-2">Разнообразное меню</h3>
+            <p class="text-sm text-gray-600">Салаты, смузи, фитнес-бургеры и больше. Для всех вкусов!</p>
+        </div>
+    </div>
+</section>
+
+<!-- Секция популярных блюд: Карусель или сетка с карточками блюд -->
+<section class="bg-gray-50 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl font-bold text-orange-500 mb-8 text-center">Популярные хиты 🔥</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- Пример карточек блюд (можно динамически подставлять из данных) -->
+            <div class="popular-dish">
+                <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800" alt="Салат" class="w-full h-48 object-cover">
+                <div class="content">
+                    <h3 class="text-lg font-semibold">Курица с манговой сальсой</h3>
+                    <p class="text-sm text-gray-600">Куриные бедра, манго, 380 ккал. 400 ₽</p>
+                    <a href="{{ url_for('menu') }}" class="text-orange-500 font-semibold hover:underline add-button">Добавить</a>
+                </div>
+            </div>
+            <div class="popular-dish">
+                <img src="https://images.unsplash.com/photo-1565299585323-38d6b0865b47?q=80&w=800" alt="Смузи" class="w-full h-48 object-cover">
+                <div class="content">
+                    <h3 class="text-lg font-semibold">Тропический смузи</h3>
+                    <p class="text-sm text-gray-600">Манго, ананас, апельсиновый сок, 160 ккал. 230 ₽</p>
+                    <a href="{{ url_for('menu') }}" class="text-orange-500 font-semibold hover:underline add-button">Добавить</a>
+                </div>
+            </div>
+            <div class="popular-dish">
+                <img src="https://images.unsplash.com/photo-1708989176600-292d49d45e99?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=687" alt="Бургер" class="w-full h-48 object-cover">
+                <div class="content">
+                    <h3 class="text-lg font-semibold">Фитнес-бургер</h3>
+                    <p class="text-sm text-gray-600">Цельнозерновая булка, 400 ккал. 300 ₽</p>
+                    <a href="{{ url_for('menu') }}" class="text-orange-500 font-semibold hover:underline add-button">Добавить</a>
+                </div>
+            </div>
+            <div class="popular-dish">
+                <img src="https://images.unsplash.com/photo-1606890658317-7d14490b76fd?q=80&w=800" alt="Суп" class="w-full h-48 object-cover">
+                <div class="content">
+                    <h3 class="text-lg font-semibold">Тайский зеленый карри</h3>
+                    <p class="text-sm text-gray-600">Курица, кокосовое молоко, 480 ккал. 450 ₽</p>
+                    <a href="{{ url_for('menu') }}" class="text-orange-500 font-semibold hover:underline add-button">Добавить</a>
+                </div>
+            </div>
+        </div>
+        <div class="text-center mt-8">
+            <a href="{{ url_for('menu') }}" class="cta-button inline-block text-lg">Смотреть все меню</a>
+        </div>
+    </div>
+</section>
+
+<!-- Секция "Как заказать": Шаги с иконками -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <h2 class="text-3xl font-bold text-orange-500 mb-8 text-center">Как это работает? 📱</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="text-center">
+            <div class="emoji-large">1️⃣</div>
+            <h3 class="text-xl font-semibold mb-2">Выбери блюда</h3>
+            <p class="text-sm text-gray-600">Просмотри меню и добавь в корзину.</p>
+        </div>
+        <div class="text-center">
+            <div class="emoji-large">2️⃣</div>
+            <h3 class="text-xl font-semibold mb-2">Оформи заказ</h3>
+            <p class="text-sm text-gray-600">Выбери доставку или самовывоз.</p>
+        </div>
+        <div class="text-center">
+            <div class="emoji-large">3️⃣</div>
+            <h3 class="text-xl font-semibold mb-2">Наслаждайся!</h3>
+            <p class="text-sm text-gray-600">Получи и съешь с удовольствием. 😋</p>
+        </div>
+    </div>
+</section>
+
+<!-- Секция отзывов: Простые цитаты -->
+<section class="bg-gray-50 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl font-bold text-orange-500 mb-8 text-center">Что говорят наши клиенты? ⭐</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="review-card">
+                <p class="text-sm text-gray-600 review-text">"Вкусно, быстро и полезно! Идеально для фитнеса."</p>
+                <p class="font-semibold review-author text-center">Алексей, 28 лет</p>
+            </div>
+            <div class="review-card">
+                <p class="text-sm text-gray-600 review-text">"Люблю их салаты — свежие и сытные!"</p>
+                <p class="font-semibold review-author text-center">Мария, 35 лет</p>
+            </div>
+            <div class="review-card">
+                <p class="text-sm text-gray-600 review-text">"Доставка всегда вовремя. Рекомендую!"</p>
+                <p class="font-semibold review-author text-center">Дмитрий, 42 года</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Призыв к действию: Регистрация или вход -->
+<section class="text-center py-12 bg-gradient-to-r from-orange-500 to-orange-400 text-white">
+    <h2 class="text-3xl font-bold mb-4">Готов к здоровому питанию? 🥦</h2>
+    <p class="text-xl mb-6">Зарегистрируйся и получи скидку на первый заказ!</p>
+    <a href="{{ url_for('login') }}" class="cta-button inline-block text-lg bg-white text-orange-500 hover:bg-gray-100">Войти / Зарегистрироваться</a>
+</section>
+
+<!-- Футер: Простой с контактами -->
+<footer class="bg-gray-800 text-white py-6 text-center">
+    <p class="text-sm">FastFit © 2025. Все права защищены.</p>
+    <p class="text-sm mt-2">📞 +7 (495) 123-45-67 | 📍 Москва | Социальные сети: VK, Telegram</p>
+</footer>
+{% endblock %}

@@ -36,6 +36,7 @@ class DishBase(Base):
         PGUUID, ForeignKey("categories.category_id"), nullable=False
     )
     restaurant_id: Mapped[UUID] = mapped_column(PGUUID, nullable=False)
+    image: Mapped[str] = mapped_column(String, nullable=True)
 
     # Relationship to the category record (joined by default in read queries)
     category: Mapped["CategoryBase"] = relationship("CategoryBase", lazy="noload")

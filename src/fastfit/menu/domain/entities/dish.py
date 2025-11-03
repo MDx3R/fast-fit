@@ -20,6 +20,7 @@ class Dish:
     filters: DishFilters
     category_id: UUID
     restaurant_id: UUID
+    image: str | None
 
     def update_name(self, name: DishName) -> None:
         self.name = name
@@ -51,6 +52,7 @@ class Dish:
         filters: DishFilters,
         category_id: UUID,
         restaurant_id: UUID,
+        image: str | None,
     ) -> Self:
         return cls(
             dish_id=dish_id,
@@ -62,4 +64,5 @@ class Dish:
             filters=filters,
             category_id=category_id,
             restaurant_id=restaurant_id,
+            image=image,
         )

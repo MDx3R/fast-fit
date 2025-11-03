@@ -19,3 +19,4 @@ class CreateDishCommand:
     filters: list[DishFilterType]
     category_id: UUID
     restaurant_id: UUID
+    image: str | None

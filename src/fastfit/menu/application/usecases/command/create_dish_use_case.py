@@ -32,6 +32,7 @@ class CreateDishUseCase(ICreateDishUseCase):
                 filters=command.filters,
                 category_id=command.category_id,
                 restaurant_id=command.restaurant_id,
+                image=command.image,
             )
         )
         await self.dish_repository.add(dish)

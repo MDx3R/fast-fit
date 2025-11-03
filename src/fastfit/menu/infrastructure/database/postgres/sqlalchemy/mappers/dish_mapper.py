@@ -24,6 +24,7 @@ class DishMapper:
             filters=DishFilters.create(model.filters),
             category_id=model.category_id,
             restaurant_id=model.restaurant_id,
+            image=model.image,
         )
 
     @staticmethod
@@ -42,4 +43,5 @@ class DishMapper:
             filters=entity.filters.filters,
             category_id=entity.category_id,
             restaurant_id=entity.restaurant_id,
+            image=entity.image,
         )
