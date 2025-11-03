@@ -7,3 +7,4 @@ class OrderStatus(Enum):
     READY = "ready"
     DELIVERED = "delivered"
     PICKED_UP = "picked_up"
+    CANCELLED = "cancelled"

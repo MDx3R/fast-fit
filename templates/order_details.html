@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Заказ #{{ order.id }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <h1 class="text-3xl font-bold text-orange-500 mb-8">Заказ #{{ order.id }}</h1>
+    <div class="bg-white p-6 rounded-2xl shadow-md">
+        <p class="text-sm text-gray-600 mb-2">Дата: {{ order.date }}</p>
+        <p class="text-sm text-gray-600 mb-2">Тип доставки: {{ order.delivery_type|capitalize }}</p>
+        <p class="text-sm text-gray-600 mb-2">Адрес: {{ order.delivery_address }}</p>
+        <p class="text-sm text-gray-600 mb-2">Статус: <span class="{{ order.status_color }}">{{ order.status }}</span></p>
+        <h2 class="text-lg font-semibold mb-2">Состав заказа</h2>
+        <ul class="text-sm text-gray-600 mb-4">
+            {% for item in order.items %}
+            <li>{{ item }}</li>
+            {% endfor %}
+        </ul>
+        <p class="text-lg font-bold text-orange-500">Итого: {{ order.total }} ₽</p>
+    </div>
+</div>
+{% endblock %}

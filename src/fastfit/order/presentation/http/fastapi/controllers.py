@@ -1,13 +1,21 @@
 from datetime import datetime, timedelta
 from typing import Annotated, Any
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+from fastfit.identity.domain.entity.identity import Identity
 from fastfit.identity.domain.value_objects.descriptor import IdentityDescriptor
 from fastfit.identity.presentation.http.fastapi.auth import get_descriptor
+from fastfit.order.application.dtos.queries.get_order_by_id_query import (
+    GetOrderByIdQuery,
+)
 from fastfit.order.application.dtos.queries.get_orders_by_user_query import (
     GetOrdersByUserQuery,
+)
+from fastfit.order.application.interfaces.usecases.query.get_order_by_id_use_case import (
+    IGetOrderByIdUseCase,
 )
 from fastfit.order.application.interfaces.usecases.query.get_orders_by_user_use_case import (
     IGetOrdersByUserUseCase,
@@ -84,3 +92,41 @@ async def get_profile(
         raise HTTPException(
             status_code=500, detail=f"Error fetching profile: {e!s}"
         ) from e
+
+
+@order_router.get("/order/{order_id}", name="order_details")
+async def get_order_details(
+    request: Request,
+    order_id: UUID,
+    user: Annotated[Identity, Depends(get_descriptor)],
+    order_use_case: Annotated[IGetOrderByIdUseCase, Depends()],
+) -> HTMLResponse:
+    try:
+        query = GetOrderByIdQuery(order_id=order_id)
+        order: OrderReadModel = await order_use_case.execute(query)
+        if order.user_id != user.identity_id:
+            raise HTTPException(status_code=403, detail="Access denied")
+        formatted_order: dict[str, Any] = {
+            "id": str(order.order_id),
+            "date": order.created_at.strftime("%d.%m.%Y %H:%M"),
+            "items": [
+                f"{item.quantity}x {item.dish_id}" for item in order.items
+            ],  # Replace with dish names
+            "total": f"{order.total_price:.2f}",
+            "status": order.status.value.capitalize(),
+            "status_color": {
+                "created": "text-gray-500",
+                "preparing": "text-yellow-500",
+                "ready": "text-green-500",
+                "delivered": "text-blue-500",
+                "picked_up": "text-blue-500",
+                "cancelled": "text-red-500",
+            }.get(order.status.value, "text-gray-500"),
+            "delivery_type": order.delivery_type.value,
+            "delivery_address": order.delivery_address or "Самовывоз",
+        }
+        return templates.TemplateResponse(
+            "order_details.html", {"request": request, "order": formatted_order}
+        )
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=f"Order not found: {e!s}") from e
