@@ -1,7 +1,8 @@
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from typing import Annotated, Any
 from uuid import UUID
+from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -55,7 +56,7 @@ async def get_profile(
         formatted_orders: list[dict[str, Any]] = [
             {
                 "id": str(order.order_id),
-                "date": order.created_at,
+                "date": order.created_at.astimezone(ZoneInfo("Europe/Moscow")),
                 "units": [
                     {
                         "quantity": item.quantity,
@@ -83,12 +84,14 @@ async def get_profile(
         ]
 
         # Generate activity calendar for the last 7 days
-        today = datetime.now().date()
+        today = datetime.now(UTC).astimezone(ZoneInfo("Europe/Moscow")).date()
         activity: list[dict[str, Any]] = []
         for i in range(7):
             date = today - timedelta(days=i)
             orders_on_date = [
-                order for order in orders if order.created_at.date() == date
+                order
+                for order in orders
+                if order.created_at.astimezone(ZoneInfo("Europe/Moscow")).date() == date
             ]
             orders_count = len(orders_on_date)
             level = min(orders_count, 4)  # Levels: 0 (none), 1, 2, 3, 4 (3+ orders)
@@ -129,7 +132,7 @@ async def get_order_details(
             raise HTTPException(status_code=403, detail="Access denied")
         formatted_order: dict[str, Any] = {
             "id": str(order.order_id)[:5],
-            "date": order.created_at,
+            "date": order.created_at.astimezone(ZoneInfo("Europe/Moscow")),
             "units": [
                 {
                     "quantity": item.quantity,
