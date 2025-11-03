@@ -52,7 +52,8 @@
             </div>
             <div class="space-y-6">
                 {% for order in orders %}
-                <div class="bg-white rounded-2xl shadow-md overflow-hidden {{ order.status_color }}">
+                <div class="relative bg-white rounded-2xl shadow-md overflow-hidden {{ order.status_color }}">
+                    <div class="absolute top-0 left-0 w-full h-2 {{ order.status_color }}"></div>
                     <div class="p-6 space-y-4">
                         <!-- Заголовок заказа -->
                         <div class="flex justify-between items-center">
