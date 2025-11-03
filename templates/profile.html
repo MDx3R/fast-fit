@@ -50,9 +50,6 @@
                     </p>
                 {% endif %}
             </div>
-            {% if orders|length == 0 %}
-            <p class="text-sm text-gray-600">У вас пока нет заказов. <a href="{{ url_for('menu') }}" class="text-orange-500 hover:underline">Посмотрите наше меню!</a></p>
-            {% else %}
             <div class="space-y-6">
                 {% for order in orders %}
                 <div class="bg-white rounded-2xl shadow-md overflow-hidden {{ order.status_color }}">
@@ -116,7 +113,6 @@
                 </div>
                 {% endfor %}
             </div>
-            {% endif %}
         </div>
 
         <!-- Календарь активности -->
