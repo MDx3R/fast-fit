@@ -66,6 +66,7 @@ async def get_profile(
                             "proteins": float(item.dish.proteins),
                             "fats": float(item.dish.fats),
                             "carbohydrates": float(item.dish.carbohydrates),
+                            "image": item.dish.image or "https://placehold.co/400",
                         },
                         "price": float(item.price),
                     }
@@ -74,11 +75,13 @@ async def get_profile(
                 "total": f"{order.total_price:.2f}",
                 "status": order.status.value,
                 "status_color": {
-                    "pending": "text-yellow-500",
-                    "confirmed": "text-green-500",
-                    "delivered": "text-blue-500",
-                    "cancelled": "text-red-500",
-                }.get(order.status.value, "text-gray-500"),
+                    "created": "bg-gray-500",
+                    "preparing": "bg-yellow-500",
+                    "ready": "bg-green-500",
+                    "delivered": "bg-blue-500",
+                    "picked_up": "bg-blue-500",
+                    "cancelled": "bg-red-500",
+                }.get(order.status.value, "bg-gray-500"),
             }
             for order in orders
         ]
@@ -142,6 +145,7 @@ async def get_order_details(
                         "proteins": float(item.dish.proteins),
                         "fats": float(item.dish.fats),
                         "carbohydrates": float(item.dish.carbohydrates),
+                        "image": item.dish.image or "https://placehold.co/400",
                     },
                     "price": float(item.price),
                 }
@@ -150,13 +154,13 @@ async def get_order_details(
             "total": f"{order.total_price:.2f}",
             "status": order.status.value.capitalize(),
             "status_color": {
-                "created": "text-gray-500",
-                "preparing": "text-yellow-500",
-                "ready": "text-green-500",
-                "delivered": "text-blue-500",
-                "picked_up": "text-blue-500",
-                "cancelled": "text-red-500",
-            }.get(order.status.value, "text-gray-500"),
+                "created": "bg-gray-500",
+                "preparing": "bg-yellow-500",
+                "ready": "bg-green-500",
+                "delivered": "bg-blue-500",
+                "picked_up": "bg-blue-500",
+                "cancelled": "bg-red-500",
+            }.get(order.status.value, "bg-gray-500"),
             "delivery_type": order.delivery_type.value,
             "delivery_address": order.delivery_address or "Самовывоз",
         }

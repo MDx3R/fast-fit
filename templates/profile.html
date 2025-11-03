@@ -29,57 +29,90 @@
         <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-md">
             <h2 class="text-xl font-semibold mb-4">История заказов</h2>
             <!-- Сообщение на основе количества заказов -->
-            {% if orders|length <= 2 %}
-            <p class="text-sm text-gray-600 mb-4">Вы сделали {{ orders|length }} заказа за последнюю неделю — попробуйте наши новинки!</p>
-            {% elif orders|length <= 5 %}
-            <p class="text-sm text-gray-600 mb-4">Вы сделали {{ orders|length }} заказа за последнюю неделю — отличный выбор для здорового питания!</p>
-            {% else %}
-            <p class="text-sm text-gray-600 mb-4">Вы сделали {{ orders|length }} заказов за последнюю неделю — вы настоящий фанат FastFit!</p>
-            {% endif %}
+            <div class="mb-6 p-4 rounded-2xl bg-gradient-to-r from-yellow-50 to-yellow-100 shadow-md border border-yellow-200">
+                {% set orders_count = orders|length %}
+                {% if orders_count == 0 %}
+                    <p class="text-sm text-gray-500">
+                        У вас пока нет заказов. 
+                        <a href="{{ url_for('menu') }}" class="text-orange-500 hover:underline font-semibold">Посмотрите наше меню!</a>
+                    </p>
+                {% elif orders_count <= 2 %}
+                    <p class="text-sm text-yellow-700 font-medium">
+                        Вы сделали {{ orders_count }} заказ{{ "а" if orders_count == 1 else "а" }} за последнюю неделю — попробуйте наши новинки! ✨
+                    </p>
+                {% elif orders_count <= 5 %}
+                    <p class="text-sm text-green-700 font-medium">
+                        Вы сделали {{ orders_count }} заказа за последнюю неделю — отличный выбор для здорового питания! 🥦💪
+                    </p>
+                {% else %}
+                    <p class="text-sm text-blue-700 font-medium">
+                        Вы сделали <b>{{ orders_count }} заказов</b> за последнюю неделю — вы настоящий фанат <b>FastFit</b>! 🎉🔥
+                    </p>
+                {% endif %}
+            </div>
             {% if orders|length == 0 %}
             <p class="text-sm text-gray-600">У вас пока нет заказов. <a href="{{ url_for('menu') }}" class="text-orange-500 hover:underline">Посмотрите наше меню!</a></p>
             {% else %}
-            <div class="space-y-4">
+            <div class="space-y-6">
                 {% for order in orders %}
-                <div class="border-b border-gray-200 pb-4">
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <h3 class="text-md font-semibold">
-                                <a href="{{ url_for('order_details', order_id=order.id) }}" class="text-orange-500 hover:underline">Заказ от {{ order.date.strftime('%d.%m.%Y') }}</a>
-                            </h3>
-                            <p class="text-sm text-gray-600">{{ order.date.strftime('%d.%m.%Y %H:%M') }}</p>
+                <div class="bg-white rounded-2xl shadow-md overflow-hidden {{ order.status_color }}">
+                    <div class="p-6 space-y-4">
+                        <!-- Заголовок заказа -->
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="text-lg font-semibold">
+                                    <a href="{{ url_for('order_details', order_id=order.id) }}" class="text-orange-500 hover:underline">
+                                        Заказ от {{ order.date.strftime('%d.%m.%Y') }}
+                                    </a>
+                                </h3>
+                                <p class="text-sm text-gray-600">{{ order.date.strftime('%d.%m.%Y %H:%M') }}</p>
+                            </div>
+                            <p class="text-lg font-bold text-gray-800">{{ order.total }} ₽</p>
                         </div>
-                        <p class="text-sm font-semibold text-gray-800">{{ order.total }} ₽</p>
-                    </div>
-                    <ul class="text-sm text-gray-600 mb-2">
-                        {% for item in order.units %}
-                        <li>
-                            {{ item.quantity }}x {{ item.dish.name }}
-                            <span class="text-xs text-gray-500">
-                                (Калории: {{ (item.quantity * item.dish.calories)|round(0) }} ккал |
-                                Белки: {{ (item.quantity * item.dish.proteins)|round(0) }} г |
-                                Жиры: {{ (item.quantity * item.dish.fats)|round(0) }} г |
-                                Углеводы: {{ (item.quantity * item.dish.carbohydrates)|round(0) }} г)
-                            </span>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                    {% set totals = namespace(calories=0, proteins=0, fats=0, carbs=0) %}
 
-                    {% for item in order.units %}
-                        {% set totals.calories = totals.calories + item.quantity * item.dish.calories %}
-                        {% set totals.proteins = totals.proteins + item.quantity * item.dish.proteins %}
-                        {% set totals.fats = totals.fats + item.quantity * item.dish.fats %}
-                        {% set totals.carbs = totals.carbs + item.quantity * item.dish.carbohydrates %}
-                    {% endfor %}
-                    <p class="text-sm text-gray-600 mb-2">
-                        Общий КБЖУ:<br>
-                        Калории: {{ totals.calories|round(0) }} ккал |
-                        Белки: {{ totals.proteins|round(0) }} г |
-                        Жиры: {{ totals.fats|round(0) }} г |
-                        Углеводы: {{ totals.carbs|round(0) }} г
-                    </p>
-                    <p class="text-sm font-semibold {{ order.status_color }}">{{ order.status|capitalize }}</p>
+                        <!-- Состав заказа -->
+                        <ul class="text-sm text-gray-600 space-y-3">
+                            {% for item in order.units %}
+                            <li class="flex items-center gap-4">
+                                <!-- Картинка блюда -->
+                                <img src="{{ item.dish.image }}" alt="{{ item.dish.name }}" class="w-16 h-16 object-cover rounded-xl flex-shrink-0">
+                                <div class="flex-1">
+                                    <div class="flex justify-between items-center">
+                                        <span class="font-medium">{{ item.quantity }}x {{ item.dish.name }}</span>
+                                        <span class="font-semibold">{{ (item.quantity * item.price)|round(2) }} ₽</span>
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        Калории: {{ (item.quantity * item.dish.calories)|round(0) }} ккал |
+                                        Белки: {{ (item.quantity * item.dish.proteins)|round(0) }} г |
+                                        Жиры: {{ (item.quantity * item.dish.fats)|round(0) }} г |
+                                        Углеводы: {{ (item.quantity * item.dish.carbohydrates)|round(0) }} г
+                                    </p>
+                                </div>
+                            </li>
+                            {% endfor %}
+                        </ul>
+
+                        <!-- Общий КБЖУ -->
+                        {% set totals = namespace(calories=0, proteins=0, fats=0, carbs=0) %}
+                        {% for item in order.units %}
+                            {% set totals.calories = totals.calories + item.quantity * item.dish.calories %}
+                            {% set totals.proteins = totals.proteins + item.quantity * item.dish.proteins %}
+                            {% set totals.fats = totals.fats + item.quantity * item.dish.fats %}
+                            {% set totals.carbs = totals.carbs + item.quantity * item.dish.carbohydrates %}
+                        {% endfor %}
+                        <p class="text-sm text-gray-600">
+                            <span class="font-semibold">Общий КБЖУ:</span>
+                            Калории: {{ totals.calories|round(0) }} ккал |
+                            Белки: {{ totals.proteins|round(0) }} г |
+                            Жиры: {{ totals.fats|round(0) }} г |
+                            Углеводы: {{ totals.carbs|round(0) }} г
+                        </p>
+
+                        <!-- Статус заказа в виде pill -->
+                        <p class="inline-block px-3 py-1 rounded-full font-semibold text-white {{ order.status_color }}">
+                            {{ order.status|capitalize }}
+                        </p>
+                    </div>
                 </div>
                 {% endfor %}
             </div>
@@ -87,7 +120,7 @@
         </div>
 
         <!-- Календарь активности -->
-        <div class="bg-white p-6 rounded-2xl shadow-md">
+        <div class="bg-white p-6 rounded-2xl shadow-md max-h-[260px]">
             <h2 class="text-xl font-semibold mb-4">Активность заказов</h2>
             <p class="text-sm text-gray-600 mb-4">Ваши заказы за последнюю неделю</p>
             <div class="calendar flex flex-wrap gap-1 justify-center">
