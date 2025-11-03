@@ -1,0 +1,86 @@
+from datetime import datetime, timedelta
+from typing import Annotated, Any
+
+from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+from fastfit.identity.domain.value_objects.descriptor import IdentityDescriptor
+from fastfit.identity.presentation.http.fastapi.auth import get_descriptor
+from fastfit.order.application.dtos.queries.get_orders_by_user_query import (
+    GetOrdersByUserQuery,
+)
+from fastfit.order.application.interfaces.usecases.query.get_orders_by_user_use_case import (
+    IGetOrdersByUserUseCase,
+)
+from fastfit.order.application.read_models.order_read_model import OrderReadModel
+
+
+order_router = APIRouter()
+
+# Configure Jinja2 templates
+templates = Jinja2Templates(directory="templates")
+
+
+# GET endpoint to render the profile page
+@order_router.get("/profile", name="profile")
+async def get_profile(
+    request: Request,
+    user: Annotated[IdentityDescriptor, Depends(get_descriptor)],
+    orders_use_case: Annotated[IGetOrdersByUserUseCase, Depends()],
+) -> HTMLResponse:
+    try:
+        # Fetch orders for the user
+        query = GetOrdersByUserQuery(user_id=user.identity_id)
+        orders: list[OrderReadModel] = await orders_use_case.execute(query)
+
+        # Format orders for template
+        formatted_orders: list[dict[str, Any]] = [
+            {
+                "id": str(order.order_id),
+                "date": order.created_at,
+                "items": [
+                    f"{item.quantity}x {item.dish_id}" for item in order.items
+                ],  # Simplified; replace with actual dish names if available
+                "total": f"{order.total_price:.2f}",
+                "status": order.status.value,
+                "status_color": {
+                    "pending": "text-yellow-500",
+                    "confirmed": "text-green-500",
+                    "delivered": "text-blue-500",
+                    "cancelled": "text-red-500",
+                }.get(order.status.value, "text-gray-500"),
+            }
+            for order in orders
+        ]
+
+        # Generate activity calendar for the last 7 days
+        today = datetime.now().date()
+        activity: list[dict[str, Any]] = []
+        for i in range(7):
+            date = today - timedelta(days=i)
+            orders_on_date = [
+                order for order in orders if order.created_at.date() == date
+            ]
+            orders_count = len(orders_on_date)
+            level = min(orders_count, 4)  # Levels: 0 (none), 1, 2, 3, 4 (3+ orders)
+            activity.append(
+                {
+                    "date": date.strftime("%Y-%m-%d"),
+                    "orders_count": orders_count,
+                    "level": level,
+                }
+            )
+
+        return templates.TemplateResponse(
+            "profile.html",
+            {
+                "request": request,
+                "orders": formatted_orders,
+                "activity": activity[::-1],  # Reverse to show oldest to newest
+                "city": "Москва",  # Replace with actual user city if available
+            },
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error fetching profile: {e!s}"
+        ) from e

@@ -9,6 +9,10 @@
     border-radius: 4px;
     display: inline-block;
     margin: 2px;
+    transition: transform 0.2s ease;
+}
+.calendar-day:hover {
+    transform: scale(1.1);
 }
 .calendar-day.level-0 { background-color: #ebedf0; }
 .calendar-day.level-1 { background-color: #c6e48b; }
@@ -32,30 +36,36 @@
             {% else %}
             <p class="text-sm text-gray-600 mb-4">Вы сделали {{ orders|length }} заказов за последнюю неделю — вы настоящий фанат FastFit!</p>
             {% endif %}
+            {% if orders|length == 0 %}
+            <p class="text-sm text-gray-600">У вас пока нет заказов. <a href="{{ url_for('menu') }}" class="text-orange-500 hover:underline">Посмотрите наше меню!</a></p>
+            {% else %}
             <div class="space-y-4">
                 {% for order in orders %}
                 <div class="border-b border-gray-200 pb-4">
-                    <div class="flex justify-between">
+                    <div class="flex justify-between items-center">
                         <div>
-                            <h3 class="text-md font-semibold">Заказ #{{ order.id }}</h3>
-                            <p class="text-sm text-gray-600">{{ order.date|date }}</p>
+                            <h3 class="text-md font-semibold">
+                                <a href="{{ url_for('order_details', order_id=order.id) }}" class="text-orange-500 hover:underline">Заказ #{{ order.id }}</a>
+                            </h3>
+                            <p class="text-sm text-gray-600">{{ order.date.strftime('%d.%m.%Y %H:%M') }}</p>
                         </div>
-                        <p class="text-sm text-gray-600">{{ order.total }} ₽</p>
+                        <p class="text-sm font-semibold text-gray-800">{{ order.total }} ₽</p>
                     </div>
                     <p class="text-sm text-gray-600">{{ order.items|join(', ') }}</p>
-                    <p class="text-sm font-semibold {{ order.status_color }}">{{ order.status }}</p>
+                    <p class="text-sm font-semibold {{ order.status_color }}">{{ order.status|capitalize }}</p>
                 </div>
                 {% endfor %}
             </div>
+            {% endif %}
         </div>
 
         <!-- Календарь активности -->
         <div class="bg-white p-6 rounded-2xl shadow-md">
             <h2 class="text-xl font-semibold mb-4">Активность заказов</h2>
             <p class="text-sm text-gray-600 mb-4">Ваши заказы за последнюю неделю</p>
-            <div class="calendar flex flex-wrap gap-1">
+            <div class="calendar flex flex-wrap gap-1 justify-center">
                 {% for day in activity %}
-                <div class="calendar-day level-{{ day.level }}" title="{{ day.date }}: {{ day.orders_count }} заказ(ов)"></div>
+                <div class="calendar-day level-{{ day.level }}" title="{{ day.date }}: {{ day.orders_count }} заказ(ов)" aria-label="{{ day.date }}: {{ day.orders_count }} заказ(ов)"></div>
                 {% endfor %}
             </div>
             <div class="mt-4 text-sm text-gray-600">

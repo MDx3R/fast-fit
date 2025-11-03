@@ -5,7 +5,7 @@ from uuid import UUID
 from common.infrastructure.database.sqlalchemy.models.base import Base
 from fastfit.order.domain.value_objects.delivery_type import DeliveryType
 from fastfit.order.domain.value_objects.order_status import OrderStatus
-from sqlalchemy import DateTime, Enum, Numeric, String
+from sqlalchemy import DateTime, Enum, ForeignKey, Numeric, String
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -13,7 +13,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 class OrderItemBase(Base):
     __tablename__ = "order_items"
 
-    order_id: Mapped[UUID] = mapped_column(PGUUID, primary_key=True)
+    order_id: Mapped[UUID] = mapped_column(
+        PGUUID, ForeignKey("orders.order_id"), primary_key=True
+    )
     dish_id: Mapped[UUID] = mapped_column(PGUUID, primary_key=True)
     quantity: Mapped[int] = mapped_column(nullable=False)
     price: Mapped[Decimal] = mapped_column(Numeric, nullable=False)

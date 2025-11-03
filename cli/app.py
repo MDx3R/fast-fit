@@ -14,6 +14,8 @@ from fastfit.identity.infrastructure.app.app import IdentityApp
 from fastfit.identity.infrastructure.di.container.container import IdentityContainer
 from fastfit.menu.infrastructure.app.app import MenuApp
 from fastfit.menu.infrastructure.di.container.container import DishContainer
+from fastfit.order.infrastructure.app.app import OrderApp
+from fastfit.order.infrastructure.di.container.container import OrderContainer
 
 
 def main() -> App:
@@ -68,6 +70,10 @@ def main() -> App:
         uuid_generator=uuid_generator, query_executor=query_executor
     )
 
+    order_container = OrderContainer(
+        clock=clock, uuid_generator=uuid_generator, query_executor=query_executor
+    )
+
     logger.info("building application...")
 
     app = App(logger, server)
@@ -76,6 +82,7 @@ def main() -> App:
         AuthApp(auth_container, server),
         IdentityApp(identity_container, server),
         MenuApp(dish_container, server),
+        OrderApp(order_container, server),
     )
     app.configure()
 
