@@ -63,6 +63,9 @@ async def get_menu(
                 "price": f"{dish.price:.2f}",
                 "calories": f"{dish.calories:.0f}",
                 "category": str(dish.category.category_id),
+                "proteins": f"{dish.proteins:.0f}",
+                "fats": f"{dish.fats:.0f}",
+                "carbohydrates": f"{dish.carbohydrates:.0f}",
                 "image": dish.image or "https://placehold.co/400",  # Fallback image
             }
             for dish in dishes

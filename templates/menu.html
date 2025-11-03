@@ -9,27 +9,6 @@
 .category-buttons::-webkit-scrollbar {
     display: none;
 }
-.calorie-select:focus + .calorie-tooltip {
-    opacity: 1;
-    transform: translateY(0);
-}
-.nutrition-tooltip {
-    position: absolute;
-    background-color: #fff;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 8px 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    z-index: 10;
-    opacity: 0;
-    transform: translateY(10px);
-    transition: opacity 0.2s ease, transform 0.2s ease;
-    pointer-events: none;
-}
-.menu-item:hover .nutrition-tooltip {
-    opacity: 1;
-    transform: translateY(0);
-}
 .quantity-input::-webkit-outer-spin-button,
 .quantity-input::-webkit-inner-spin-button {
     -webkit-appearance: none;
@@ -37,6 +16,28 @@
 }
 .quantity-input {
     -moz-appearance: textfield;
+}
+.description {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+#dish-modal {
+    backdrop-filter: blur(4px);
+}
+#dish-modal .modal-content {
+    max-height: 90vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+#dish-modal .modal-content::-webkit-scrollbar {
+    width: 6px;
+}
+#dish-modal .modal-content::-webkit-scrollbar-thumb {
+    background-color: #d1d5db;
+    border-radius: 3px;
 }
 {% endblock %}
 
@@ -81,46 +82,76 @@
     <!-- Menu -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {% for item in menu_items %}
-        <div class="menu-item bg-white rounded-2xl shadow-md overflow-hidden transform hover:-translate-y-1 transition-transform relative flex flex-col h-full"
-             data-category="{{ item.category }}" data-calories="{{ item.calories }}" data-dish-id="{{ item.id }}">
-
+        <div class="menu-item bg-white rounded-2xl shadow-md overflow-hidden transform hover:-translate-y-1 transition-transform cursor-pointer relative flex flex-col h-full"
+             data-dish-id="{{ item.id }}"
+             data-category="{{ item.category }}"
+             data-calories="{{ item.calories }}"
+             data-name="{{ item.name }}"
+             data-description="{{ item.description }}"
+             data-price="{{ item.price }}"
+             data-protein="{{ item.proteins }}"
+             data-fat="{{ item.fats }}"
+             data-carbs="{{ item.carbohydrates }}"
+             data-image="{{ item.image }}">
             <img src="{{ item.image }}" alt="{{ item.name }}" class="w-full h-48 object-cover">
             <div class="p-5 text-center flex flex-col flex-grow">
                 <h3 class="text-lg font-semibold mb-2">{{ item.name }}</h3>
-                <p class="text-sm text-gray-600 mb-4">{{ item.description }}</p>
-                <p class="text-sm text-gray-600 mb-4">{{ item.calories }} ккал</p>
-                <!-- Nutrition Tooltip -->
-                <div class="nutrition-tooltip" style="bottom: 100%; left: 50%; transform: translateX(-50%) translateY(-10px);">
-                    <p class="text-sm text-gray-800">Калории: {{ item.calories }} ккал</p>
-                    <p class="text-sm text-gray-800">Белки: {{ item.protein }} г</p>
-                    <p class="text-sm text-gray-800">Жиры: {{ item.fat }} г</p>
-                    <p class="text-sm text-gray-800">Углеводы: {{ item.carbs }} г</p>
+                <p class="text-sm text-gray-600 mb-4 description">{{ item.description }}</p>
+                <!-- <p class="text-sm text-gray-600 mb-4 mt-auto">{{ item.calories }} ккал</p> -->
+                <div class="text-sm text-gray-600 mb-3 mt-auto">
+                    <span>🔥 {{ item.calories }} ккал</span>
+                    <span>💪 {{ item.proteins }} г</span>
+                    <span>🥑 {{ item.fats }} г</span>
+                    <span>🍞 {{ item.carbohydrates }} г</span>
                 </div>
-                <!-- Cart Controls -->
-                <div class="flex justify-center items-center gap-2 mt-auto">
-                    <div class="cart-controls" data-dish-id="{{ item.id }}">
-                        <button class="add-to-cart bg-orange-500 text-white py-2 px-6 rounded-full font-semibold hover:bg-orange-600 transition-colors"
-                                data-dish-id="{{ item.id }}"
-                                data-name="{{ item.name }}"
-                                data-price="{{ item.price }}"
-                                data-calories="{{ item.calories }}"
-                                data-protein="{{ item.protein }}"
-                                data-fat="{{ item.fat }}"
-                                data-carbs="{{ item.carbs }}"
-                                data-image="{{ item.image }}">
-                            В корзину ({{ item.price }} ₽)
-                        </button>
 
-                        <div class="quantity-controls hidden flex items-center gap-2">
-                            <button class="decrease-quantity w-8 h-8 bg-gray-200 rounded-full hover:bg-gray-300 transition-colors">-</button>
-                            <input type="number" class="quantity-input w-12 text-center border border-gray-300 rounded-lg" value="0" min="0">
-                            <button class="increase-quantity w-8 h-8 bg-gray-200 rounded-full hover:bg-gray-300 transition-colors">+</button>
-                        </div>
+                <!-- Cart Controls -->
+                <div class="flex justify-center items-center gap-2 cart-controls" data-dish-id="{{ item.id }}">
+                    <button class="add-to-cart bg-orange-500 text-white py-2 px-6 rounded-full font-semibold hover:bg-orange-600 transition-colors">
+                        Добавить в корзину
+                    </button>
+                    <div class="quantity-controls hidden flex items-center gap-2">
+                        <button class="decrease-quantity w-8 h-8 bg-gray-200 rounded-full hover:bg-gray-300 transition-colors">-</button>
+                        <input type="number" class="quantity-input w-12 text-center border border-gray-300 rounded-lg" value="0" min="0">
+                        <button class="increase-quantity w-8 h-8 bg-gray-200 rounded-full hover:bg-gray-300 transition-colors">+</button>
                     </div>
+                </div>
+                <div class="absolute top-3 left-3 bg-white shadow-md px-3 py-1 rounded-full text-orange-500 font-bold text-sm">
+                    {{ item.price }} ₽
                 </div>
             </div>
         </div>
         {% endfor %}
+    </div>
+
+    <!-- Dish Modal Popup -->
+    <div id="dish-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="modal-content bg-white rounded-2xl p-6 max-w-lg w-full relative">
+            <button id="close-modal" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+            <img id="modal-image" src="" alt="" class="w-full h-64 object-cover rounded-lg mb-4">
+            <h2 id="modal-name" class="text-2xl font-bold mb-2"></h2>
+            <p id="modal-description" class="text-sm text-gray-600 mb-4"></p>
+            <p id="modal-price" class="text-lg font-bold text-orange-500 mb-4"></p>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <p class="text-sm text-gray-800">Калории:</p>
+                    <p id="modal-calories" class="font-semibold"></p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-800">Белки:</p>
+                    <p id="modal-protein" class="font-semibold"></p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-800">Жиры:</p>
+                    <p id="modal-fat" class="font-semibold"></p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-800">Углеводы:</p>
+                    <p id="modal-carbs" class="font-semibold"></p>
+                </div>
+            </div>
+            <button id="modal-add-to-cart" class="bg-orange-500 text-white py-2 px-6 rounded-full font-semibold hover:bg-orange-600 transition-colors w-full">Добавить в корзину</button>
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -140,7 +171,7 @@
 
     function addToCart(dish, quantity = 1) {
         if (quantity < 1) {
-            showCartMessage('Количество должно быть не менее 1');
+            //showCartMessage('Количество должно быть не менее 1');
             return;
         }
         const cart = getCart();
@@ -151,7 +182,7 @@
             cart.push({ ...dish, quantity });
         }
         saveCart(cart);
-        showCartMessage(`Добавлено: ${dish.name}`);
+        //showCartMessage(`Добавлено: ${dish.name}`);
     }
 
     function updateCartItemQuantity(dishId, newQuantity) {
@@ -206,25 +237,27 @@
         });
     }
 
-    // Event listeners for cart controls
+    // Cart control event listeners
     document.querySelectorAll('.add-to-cart').forEach(button => {
-        button.addEventListener('click', () => {
+        button.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent modal from opening
             const dish = {
-                dish_id: button.dataset.dishId,
-                name: button.dataset.name,
-                price: parseFloat(button.dataset.price),
-                calories: parseFloat(button.dataset.calories),
-                protein: parseFloat(button.dataset.protein),
-                fat: parseFloat(button.dataset.fat),
-                carbs: parseFloat(button.dataset.carbs),
-                image: button.dataset.image
+                dish_id: button.closest('.menu-item').dataset.dishId,
+                name: button.closest('.menu-item').dataset.name,
+                price: parseFloat(button.closest('.menu-item').dataset.price),
+                calories: parseFloat(button.closest('.menu-item').dataset.calories),
+                protein: parseFloat(button.closest('.menu-item').dataset.protein),
+                fat: parseFloat(button.closest('.menu-item').dataset.fat),
+                carbs: parseFloat(button.closest('.menu-item').dataset.carbs),
+                image: button.closest('.menu-item').dataset.image
             };
             addToCart(dish);
         });
     });
 
     document.querySelectorAll('.increase-quantity').forEach(button => {
-        button.addEventListener('click', () => {
+        button.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent modal from opening
             const dishId = button.closest('.cart-controls').dataset.dishId;
             const quantityInput = button.closest('.quantity-controls').querySelector('.quantity-input');
             const newQuantity = parseInt(quantityInput.value) + 1;
@@ -233,7 +266,8 @@
     });
 
     document.querySelectorAll('.decrease-quantity').forEach(button => {
-        button.addEventListener('click', () => {
+        button.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent modal from opening
             const dishId = button.closest('.cart-controls').dataset.dishId;
             const quantityInput = button.closest('.quantity-controls').querySelector('.quantity-input');
             const newQuantity = parseInt(quantityInput.value) - 1;
@@ -242,7 +276,8 @@
     });
 
     document.querySelectorAll('.quantity-input').forEach(input => {
-        input.addEventListener('input', () => {
+        input.addEventListener('input', (e) => {
+            e.stopPropagation(); // Prevent modal from opening
             const dishId = input.closest('.cart-controls').dataset.dishId;
             const newQuantity = parseInt(input.value);
             if (newQuantity >= 0) {
@@ -253,13 +288,60 @@
         });
     });
 
+    // Modal functionality
+    const modal = document.getElementById('dish-modal');
+    const closeModalBtn = document.getElementById('close-modal');
+    const modalAddToCart = document.getElementById('modal-add-to-cart');
+
+    document.querySelectorAll('.menu-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+            if (e.target.closest('.cart-controls')) return;
+            populateModal(item);
+            modal.classList.remove('hidden');
+        });
+    });
+
+    function populateModal(item) {
+        document.getElementById('modal-image').src = item.dataset.image;
+        document.getElementById('modal-name').textContent = item.dataset.name;
+        document.getElementById('modal-description').textContent = item.dataset.description;
+        document.getElementById('modal-price').textContent = `${item.dataset.price} ₽`;
+        document.getElementById('modal-calories').textContent = `${item.dataset.calories} ккал`;
+        document.getElementById('modal-protein').textContent = `${item.dataset.protein} г`;
+        document.getElementById('modal-fat').textContent = `${item.dataset.fat} г`;
+        document.getElementById('modal-carbs').textContent = `${item.dataset.carbs} г`;
+        modalAddToCart.dataset.dishId = item.dataset.dishId;
+    }
+
+    closeModalBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+    });
+
+    function closeModal() {
+        modal.classList.add('hidden');
+    }
+
+    modalAddToCart.addEventListener('click', () => {
+        const dishId = modalAddToCart.dataset.dishId;
+        const dishItem = document.querySelector(`.menu-item[data-dish-id="${dishId}"]`);
+        const addButton = dishItem.querySelector('.add-to-cart');
+        if (addButton && !addButton.classList.contains('hidden')) {
+            addButton.click();
+        } else {
+            const increaseBtn = dishItem.querySelector('.increase-quantity');
+            if (increaseBtn) increaseBtn.click();
+        }
+        closeModal();
+    });
+
     // Initialize cart controls and counter on page load
     document.addEventListener('DOMContentLoaded', () => {
         updateCartCounter();
         updateAllCartControls();
     });
 
-    // Existing filter logic
+    // Filter logic
     const categoryButtons = document.querySelectorAll('.category-buttons .filter-btn');
     const calorieSelect = document.getElementById('calories');
     const menuItems = document.querySelectorAll('.menu-item');
