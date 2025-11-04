@@ -14,36 +14,52 @@
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
-    <!-- Шапка -->
-    <header class="bg-gradient-to-r from-orange-500 to-orange-400 text-white py-4 shadow-md sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-            <!-- Левая часть -->
-            <div class="flex items-center gap-4">
-                <a href="{{ url_for('menu') }}" class="text-2xl font-bold uppercase tracking-wide">FastFit</a>
-                <div class="flex items-center gap-2 text-lg font-semibold cursor-pointer">
-                    <span>📍</span>
-                    <span>{{ city|default('Москва') }}</span>
-                </div>
+
+<header class="bg-gradient-to-r from-orange-500 to-orange-400 text-white py-4 shadow-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+
+        <!-- Левая часть -->
+        <div class="flex items-center gap-4">
+            <a href="{{ url_for('menu') }}" class="text-2xl font-bold uppercase tracking-wide">FastFit</a>
+            <div class="hidden sm:flex items-center gap-2 text-lg font-semibold cursor-pointer">
+                <span>📍</span>
+                <span>{{ city|default('Москва') }}</span>
             </div>
-            <!-- Навигация -->
-            <nav class="flex gap-6">
-                <a href="{{ url_for('menu') }}" class="font-semibold hover:opacity-80 transition-opacity">Меню</a>
-                {% if request.cookies.get('access_token') %}
-                    <a href="{{ url_for('profile') }}" class="font-semibold hover:opacity-80 transition-opacity">Профиль</a>
-                {% else %}
-                    <a href="{{ url_for('login') }}" class="font-semibold hover:opacity-80 transition-opacity">Войти</a>
-                {% endif %}
-                <a href="{{ url_for('cart') }}" class="font-semibold hover:opacity-80 transition-opacity relative">
-                    Корзина
-                    <span id="cart-counter" class="hidden absolute -top-2 -right-4 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"></span>
-                </a>
-            </nav>
         </div>
-    </header>
 
-    <!-- Контейнер -->
-    {% block content %}{% endblock %}
+        <!-- Бургер-кнопка (мобилка) -->
+        <button id="burger-btn" class="sm:hidden text-3xl focus:outline-none">
+            ☰
+        </button>
 
-    {% block scripts %}{% endblock %}
+        <!-- Навигация -->
+        <nav id="mobile-menu" class="hidden sm:flex gap-6 flex-col sm:flex-row absolute sm:static top-full left-0 w-full sm:w-auto bg-orange-500 sm:bg-transparent text-white sm:mt-0 mt-3 p-4 sm:p-0 shadow-md sm:shadow-none">
+            <a href="{{ url_for('menu') }}" class="font-semibold hover:opacity-80 transition-opacity">Меню</a>
+
+            {% if request.cookies.get('access_token') %}
+                <a href="{{ url_for('profile') }}" class="font-semibold hover:opacity-80 transition-opacity">Профиль</a>
+            {% else %}
+                <a href="{{ url_for('login') }}" class="font-semibold hover:opacity-80 transition-opacity">Войти</a>
+            {% endif %}
+
+            <a href="{{ url_for('cart') }}" class="font-semibold hover:opacity-80 transition-opacity relative">
+                Корзина
+                <span id="cart-counter" class="hidden absolute -top-2 -right-4 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"></span>
+            </a>
+        </nav>
+    </div>
+</header>
+
+{% block content %}{% endblock %}
+{% block scripts %}{% endblock %}
+
+<script>
+    const btn = document.getElementById('burger-btn');
+    const menu = document.getElementById('mobile-menu');
+    btn.addEventListener('click', () => {
+        menu.classList.toggle('hidden');
+    });
+</script>
+
 </body>
 </html>

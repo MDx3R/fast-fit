@@ -57,24 +57,28 @@
     </div>
 
     <!-- Filters -->
-    <div class="bg-white p-6 rounded-lg shadow-md mb-10 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-6">
-        <div class="flex-1">
-            <h3 class="text-lg font-semibold mb-3">Категории</h3>
-            <div class="category-buttons flex gap-3 overflow-x-auto pb-2 scroll-smooth">
-                {% for category in categories %}
-                <button class="filter-btn px-4 py-2 border border-gray-300 rounded-full text-sm font-semibold whitespace-nowrap hover:bg-orange-500 hover:text-white hover:border-orange-500 transition-all" data-category="{{ category.id }}">{{ category.name }}</button>
-                {% endfor %}
-            </div>
-        </div>
-        <div class="w-full sm:w-64 relative">
-            <h3 class="text-lg font-semibold mb-3">Калорийность</h3>
-            <div class="relative">
-                <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">🍎</span>
-                <select id="calories" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all">
-                    {% for calorie_option in calorie_options %}
-                    <option value="{{ calorie_option.value }}">{{ calorie_option.label }}</option>
+    <div class="bg-white p-4 sm:p-6 rounded-lg shadow-md mb-10">
+        <div class="flex flex-col lg:flex-row lg:items-center gap-6">
+            <!-- Categories -->
+            <div class="flex-1">
+                <h3 class="text-lg font-semibold mb-3">Категории</h3>
+                <div class="category-buttons flex gap-2 sm:gap-3 overflow-x-auto pb-2 scroll-smooth -mx-4 sm:mx-0 px-4 sm:px-0">
+                    {% for category in categories %}
+                    <button class="filter-btn min-w-fit px-3 sm:px-4 py-2 border border-gray-300 rounded-full text-sm font-semibold whitespace-nowrap hover:bg-orange-500 hover:text-white hover:border-orange-500 transition-all" data-category="{{ category.id }}">{{ category.name }}</button>
                     {% endfor %}
-                </select>
+                </div>
+            </div>
+            <!-- Calories Filter -->
+            <div class="w-64 lg:flex-shrink-0">
+                <h3 class="text-lg font-semibold mb-3">Калорийность</h3>
+                <div class="relative">
+                    <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">🍎</span>
+                    <select id="calories" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all">
+                        {% for calorie_option in calorie_options %}
+                        <option value="{{ calorie_option.value }}">{{ calorie_option.label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
         </div>
     </div>
