@@ -6,6 +6,9 @@ from common.infrastructure.server.fastapi.server import FastAPIServer
 from fastfit.order.application.interfaces.usecases.command.create_order_use_case import (
     ICreateOrderUseCase,
 )
+from fastfit.order.application.interfaces.usecases.command.update_order_status_use_case import (
+    IUpdateOrderStatusUseCase,
+)
 from fastfit.order.application.interfaces.usecases.query.get_order_by_id_use_case import (
     IGetOrderByIdUseCase,
 )
@@ -31,6 +34,9 @@ class OrderApp(IHTTPApp):
     def configure_dependencies(self) -> None:
         self.server.override_dependency(
             ICreateOrderUseCase, self.order_container.create_order_use_case()
+        )
+        self.server.override_dependency(
+            IUpdateOrderStatusUseCase, self.order_container.update_order_use_case()
         )
         self.server.override_dependency(
             IGetOrderByIdUseCase, self.order_container.get_order_by_id_use_case()

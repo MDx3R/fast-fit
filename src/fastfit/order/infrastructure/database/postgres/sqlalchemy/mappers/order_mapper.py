@@ -14,7 +14,7 @@ class OrderMapper:
     @staticmethod
     def to_domain(model: OrderBase) -> Order:
         items = [
-            OrderItem.create(
+            OrderItem(
                 dish_id=item.dish_id,
                 quantity=item.quantity,
                 price=Money.create(item.price, item.currency),
@@ -22,11 +22,12 @@ class OrderMapper:
             for item in model.items
         ]
 
-        return Order.create(
+        return Order(
             order_id=model.order_id,
             user_id=model.user_id,
             phone_number=PhoneNumber(model.phone_number),
             items=items,
+            status=model.status,
             delivery_type=model.delivery_type,
             delivery_address=(
                 DeliveryAddress(model.delivery_address)

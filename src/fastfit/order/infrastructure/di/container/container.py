@@ -4,6 +4,9 @@ from dependency_injector import containers, providers
 from fastfit.order.application.usecases.command.create_order_use_case import (
     CreateOrderUseCase,
 )
+from fastfit.order.application.usecases.command.update_order_status_use_case import (
+    UpdateOrderStatusUseCase,
+)
 from fastfit.order.application.usecases.query.get_order_by_id_use_case import (
     GetOrderByIdUseCase,
 )
@@ -31,6 +34,10 @@ class OrderContainer(containers.DeclarativeContainer):
         uuid_generator=uuid_generator,
         clock=clock,
         order_repository=order_repository,
+    )
+
+    update_order_use_case = providers.Singleton(
+        UpdateOrderStatusUseCase, order_repository=order_repository
     )
 
     get_order_by_id_use_case = providers.Singleton(

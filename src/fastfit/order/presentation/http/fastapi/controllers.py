@@ -1,10 +1,11 @@
+import asyncio
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from typing import Annotated, Any
 from uuid import UUID
 from zoneinfo import ZoneInfo
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastfit.identity.domain.value_objects.descriptor import IdentityDescriptor
@@ -13,6 +14,9 @@ from fastfit.menu.presentation.http.fastapi.controllers import DEFAULT_RESTAURAN
 from fastfit.order.application.dtos.commands.create_order_command import (
     CreateOrderCommand,
     OrderItemDTO,
+)
+from fastfit.order.application.dtos.commands.update_order_status_command import (
+    UpdateOrderStatusCommand,
 )
 from fastfit.order.application.dtos.queries.get_order_by_id_query import (
     GetOrderByIdQuery,
@@ -23,6 +27,9 @@ from fastfit.order.application.dtos.queries.get_orders_by_user_query import (
 from fastfit.order.application.interfaces.usecases.command.create_order_use_case import (
     ICreateOrderUseCase,
 )
+from fastfit.order.application.interfaces.usecases.command.update_order_status_use_case import (
+    IUpdateOrderStatusUseCase,
+)
 from fastfit.order.application.interfaces.usecases.query.get_order_by_id_use_case import (
     IGetOrderByIdUseCase,
 )
@@ -31,6 +38,7 @@ from fastfit.order.application.interfaces.usecases.query.get_orders_by_user_use_
 )
 from fastfit.order.application.read_models.order_read_model import OrderReadModel
 from fastfit.order.domain.value_objects.delivery_type import DeliveryType
+from fastfit.order.domain.value_objects.order_status import OrderStatus
 from pydantic import BaseModel
 
 
@@ -38,6 +46,35 @@ order_router = APIRouter()
 
 # Configure Jinja2 templates
 templates = Jinja2Templates(directory="templates")
+
+
+async def update_status(
+    bg: BackgroundTasks,
+    command: UpdateOrderStatusCommand,
+    use_case: IUpdateOrderStatusUseCase,
+    delay: int = 15,
+) -> None:
+    await asyncio.sleep(delay)
+    await use_case.execute(command)
+
+    next_status = None
+    delay = 15
+    if command.status == OrderStatus.PREPARING:
+        next_status = OrderStatus.READY
+    if command.status == OrderStatus.READY:
+        next_status = OrderStatus.DELIVERED
+        delay = 60
+
+    if next_status is None:
+        return
+
+    bg.add_task(
+        update_status,
+        bg=bg,
+        use_case=use_case,
+        command=UpdateOrderStatusCommand(command.order_id, next_status),
+        delay=delay,
+    )
 
 
 # GET endpoint to render the profile page
@@ -182,8 +219,10 @@ class CreateOrderRequest(BaseModel):
 @order_router.post("/orders")
 async def create_order(
     order_data: CreateOrderRequest,
+    background_tasks: BackgroundTasks,
     user: Annotated[IdentityDescriptor, Depends(get_descriptor)],
     create_order_use_case: Annotated[ICreateOrderUseCase, Depends()],
+    update_order_status_use_case: Annotated[IUpdateOrderStatusUseCase, Depends()],
 ) -> JSONResponse:
     try:
         # Validate and map data to CreateOrderCommand
@@ -209,6 +248,13 @@ async def create_order(
             restaurant_id=DEFAULT_RESTAURANT_ID,
         )
         order_id: UUID = await create_order_use_case.execute(command)
+
+        background_tasks.add_task(
+            update_status,
+            bg=background_tasks,
+            use_case=update_order_status_use_case,
+            command=UpdateOrderStatusCommand(order_id, OrderStatus.PREPARING),
+        )
         return JSONResponse(
             content={"order_id": str(order_id), "message": "Order created successfully"}
         )

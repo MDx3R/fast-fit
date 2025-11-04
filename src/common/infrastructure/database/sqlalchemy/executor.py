@@ -103,6 +103,7 @@ class QueryExecutor:
         async with self.uow.get_session() as session:
             session.add(model)
             await session.flush()
+            session.expire_all()
 
     async def add_all(
         self,
@@ -111,6 +112,7 @@ class QueryExecutor:
         async with self.uow.get_session() as session:
             session.add_all(models)
             await session.flush()
+            session.expire_all()
 
     async def save(
         self,
@@ -119,3 +121,4 @@ class QueryExecutor:
         async with self.uow.get_session() as session:
             model = await session.merge(model)
             await session.flush()
+            session.expire_all()

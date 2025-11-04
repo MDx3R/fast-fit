@@ -12,7 +12,7 @@ from fastfit.menu.infrastructure.database.postgres.sqlalchemy.models.models impo
 class DishMapper:
     @staticmethod
     def to_domain(model: DishBase) -> Dish:
-        return Dish.create(
+        return Dish(
             dish_id=model.dish_id,
             name=DishName.create(model.name),
             description=model.description,
